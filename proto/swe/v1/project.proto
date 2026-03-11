@@ -1,0 +1,86 @@
+syntax = "proto3";
+
+package swe.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service ProjectService {
+  rpc CreateProject(CreateProjectRequest) returns (ProjectResponse);
+  rpc GetProject(GetProjectRequest) returns (ProjectResponse);
+  rpc ListProjects(ListProjectsRequest) returns (ListProjectsResponse);
+  rpc ArchiveProject(ArchiveProjectRequest) returns (ProjectResponse);
+  rpc GetProjectStatus(GetProjectStatusRequest) returns (ProjectStatusResponse);
+}
+
+message CreateProjectRequest {
+  string name = 1;
+  optional string description = 2;
+  optional string repo_url = 3;
+  optional string initial_prompt = 4;
+}
+
+message GetProjectRequest {
+  string id = 1;
+}
+
+message ListProjectsRequest {
+  optional string status = 1;
+  int32 limit = 2;
+  int32 offset = 3;
+}
+
+message ArchiveProjectRequest {
+  string id = 1;
+}
+
+message GetProjectStatusRequest {
+  string id = 1;
+}
+
+message ProjectResponse {
+  Project project = 1;
+}
+
+message ListProjectsResponse {
+  repeated Project projects = 1;
+  int32 total = 2;
+}
+
+message ProjectStatusResponse {
+  Project project = 1;
+  repeated AgentSummary active_agents = 2;
+  repeated WorkItemSummary pending_work = 3;
+  repeated ArtifactSummary recent_artifacts = 4;
+}
+
+message Project {
+  string id = 1;
+  string name = 2;
+  optional string description = 3;
+  string phase = 4;
+  string status = 5;
+  optional string repo_url = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  optional string workflow_id = 9;
+}
+
+message AgentSummary {
+  string id = 1;
+  string name = 2;
+  string role = 3;
+  string status = 4;
+}
+
+message WorkItemSummary {
+  string id = 1;
+  string title = 2;
+  string status = 3;
+}
+
+message ArtifactSummary {
+  string id = 1;
+  string name = 2;
+  string artifact_type = 3;
+  string approval_status = 4;
+}

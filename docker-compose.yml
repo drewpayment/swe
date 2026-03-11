@@ -1,0 +1,156 @@
+version: "3.8"
+
+services:
+  # ─── Temporal ─────────────────────────────────────────
+  temporal:
+    image: temporalio/auto-setup:latest
+    ports:
+      - "7233:7233"
+    environment:
+      - DB=postgres12
+      - DB_PORT=5432
+      - POSTGRES_USER=temporal
+      - POSTGRES_PWD=temporal
+      - POSTGRES_SEEDS=temporal-db
+      - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    depends_on:
+      temporal-db:
+        condition: service_healthy
+    networks:
+      - swe-net
+
+  temporal-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: temporal
+      POSTGRES_PASSWORD: temporal
+    ports:
+      - "5433:5432"
+    volumes:
+      - temporal-db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U temporal"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - swe-net
+
+  temporal-ui:
+    image: temporalio/ui:latest
+    ports:
+      - "8233:8080"
+    environment:
+      - TEMPORAL_ADDRESS=temporal:7233
+    depends_on:
+      - temporal
+    networks:
+      - swe-net
+
+  # ─── LiteLLM ─────────────────────────────────────────
+  litellm:
+    image: ghcr.io/berriai/litellm:main-latest
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./config/litellm.yaml:/app/config.yaml
+    command: ["--config", "/app/config.yaml"]
+    networks:
+      - swe-net
+
+  # ─── PostgreSQL (App) ────────────────────────────────
+  postgres:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: swe
+      POSTGRES_PASSWORD: swe
+      POSTGRES_DB: swe
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U swe"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - swe-net
+
+  # ─── Redis ───────────────────────────────────────────
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis-data:/data
+    networks:
+      - swe-net
+
+  # ─── SWE API ─────────────────────────────────────────
+  swe-api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: api
+    ports:
+      - "8080:8080"
+    environment:
+      - RUST_LOG=info
+      - DATABASE_URL=postgres://swe:swe@postgres:5432/swe
+      - TEMPORAL_ADDRESS=http://temporal:7233
+      - LITELLM_URL=http://litellm:4000
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      postgres:
+        condition: service_healthy
+      temporal:
+        condition: service_started
+      redis:
+        condition: service_started
+    networks:
+      - swe-net
+
+  # ─── SWE Worker ──────────────────────────────────────
+  swe-worker:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: worker
+    environment:
+      - RUST_LOG=info
+      - TEMPORAL_ADDRESS=http://temporal:7233
+      - LITELLM_URL=http://litellm:4000
+      - REDIS_URL=redis://redis:6379
+    depends_on:
+      temporal:
+        condition: service_started
+    networks:
+      - swe-net
+
+  # ─── SWE Web UI ──────────────────────────────────────
+  swe-web:
+    build:
+      context: ./web
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      - NEXT_PUBLIC_API_URL=http://localhost:8080
+      - NEXT_PUBLIC_WS_URL=ws://localhost:8080/ws/stream
+      - BETTER_AUTH_SECRET=change-me-in-production
+      - DATABASE_URL=postgres://swe:swe@postgres:5432/swe
+    depends_on:
+      - swe-api
+      - postgres
+    networks:
+      - swe-net
+
+volumes:
+  temporal-db-data:
+  postgres-data:
+  redis-data:
+
+networks:
+  swe-net:
+    driver: bridge

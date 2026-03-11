@@ -1,0 +1,70 @@
+syntax = "proto3";
+
+package swe.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service EventService {
+  rpc StreamEvents(StreamEventsRequest) returns (stream PlatformEvent);
+}
+
+message StreamEventsRequest {
+  optional string project_id = 1;
+  optional string agent_id = 2;
+  repeated string event_types = 3;
+}
+
+message PlatformEvent {
+  string id = 1;
+  string event_type = 2;
+  google.protobuf.Timestamp timestamp = 3;
+  
+  oneof payload {
+    AgentStatusEvent agent_status = 10;
+    AgentActivityEvent agent_activity = 11;
+    ArtifactCreatedEvent artifact_created = 12;
+    PhaseChangeEvent phase_change = 13;
+    ChatMessageEvent chat_message = 14;
+    InteractionRequestedEvent interaction_requested = 15;
+  }
+}
+
+message AgentStatusEvent {
+  string agent_id = 1;
+  string status = 2;
+  string role = 3;
+}
+
+message AgentActivityEvent {
+  string agent_id = 1;
+  string activity = 2;
+  optional string detail = 3;
+}
+
+message ArtifactCreatedEvent {
+  string artifact_id = 1;
+  string name = 2;
+  string artifact_type = 3;
+  string project_id = 4;
+}
+
+message PhaseChangeEvent {
+  string project_id = 1;
+  string from_phase = 2;
+  string to_phase = 3;
+  string reason = 4;
+}
+
+message ChatMessageEvent {
+  string agent_id = 1;
+  string agent_name = 2;
+  string content = 3;
+}
+
+message InteractionRequestedEvent {
+  string interaction_id = 1;
+  string prompt = 2;
+  string interaction_type = 3;
+  repeated string options = 4;
+  optional string artifact_id = 5;
+}

@@ -1,0 +1,52 @@
+syntax = "proto3";
+
+package swe.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service WorkService {
+  rpc CreateWorkItem(CreateWorkItemRequest) returns (WorkItemResponse);
+  rpc GetWorkItem(GetWorkItemRequest) returns (WorkItemResponse);
+  rpc ListWorkItems(ListWorkItemsRequest) returns (ListWorkItemsResponse);
+}
+
+message CreateWorkItemRequest {
+  string project_id = 1;
+  string title = 2;
+  optional string description = 3;
+  optional string priority = 4;
+}
+
+message GetWorkItemRequest {
+  string id = 1;
+}
+
+message ListWorkItemsRequest {
+  optional string project_id = 1;
+  optional string status = 2;
+  int32 limit = 3;
+  int32 offset = 4;
+}
+
+message WorkItemResponse {
+  WorkItem work_item = 1;
+}
+
+message ListWorkItemsResponse {
+  repeated WorkItem work_items = 1;
+  int32 total = 2;
+}
+
+message WorkItem {
+  string id = 1;
+  string title = 2;
+  optional string description = 3;
+  string status = 4;
+  string priority = 5;
+  string project_id = 6;
+  optional string assigned_agent_id = 7;
+  optional string branch_name = 8;
+  optional string pr_url = 9;
+  google.protobuf.Timestamp created_at = 10;
+  google.protobuf.Timestamp updated_at = 11;
+}

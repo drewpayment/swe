@@ -1,0 +1,62 @@
+syntax = "proto3";
+
+package swe.v1;
+
+import "google/protobuf/timestamp.proto";
+
+service AgentService {
+  rpc ListAgents(ListAgentsRequest) returns (ListAgentsResponse);
+  rpc GetAgent(GetAgentRequest) returns (AgentResponse);
+  rpc SendMessage(SendMessageRequest) returns (SendMessageResponse);
+  rpc StreamAgent(StreamAgentRequest) returns (stream AgentEvent);
+}
+
+message ListAgentsRequest {
+  optional string project_id = 1;
+}
+
+message GetAgentRequest {
+  string id = 1;
+}
+
+message SendMessageRequest {
+  string agent_id = 1;
+  string content = 2;
+}
+
+message StreamAgentRequest {
+  string agent_id = 1;
+}
+
+message AgentResponse {
+  Agent agent = 1;
+}
+
+message ListAgentsResponse {
+  repeated Agent agents = 1;
+}
+
+message SendMessageResponse {
+  string message_id = 1;
+  bool acknowledged = 2;
+}
+
+message Agent {
+  string id = 1;
+  string name = 2;
+  string role = 3;
+  string status = 4;
+  optional string project_id = 5;
+  optional string current_work_item_id = 6;
+  google.protobuf.Timestamp created_at = 7;
+  google.protobuf.Timestamp updated_at = 8;
+  optional string workflow_id = 9;
+  uint64 tokens_consumed = 10;
+}
+
+message AgentEvent {
+  string agent_id = 1;
+  string event_type = 2;
+  string payload = 3;
+  google.protobuf.Timestamp timestamp = 4;
+}
