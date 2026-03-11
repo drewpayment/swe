@@ -93,7 +93,7 @@ swe/
 
 - Rust (stable)
 - Docker / OrbStack
-- Node.js 22+
+- Bun (or Node.js 22+)
 - Temporal CLI (optional, for local dev server)
 
 ### Build
