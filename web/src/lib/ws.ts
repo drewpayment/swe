@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { getWsUrl } from "./config";
 
 export interface StreamEvent {
   type: string;
@@ -8,8 +9,6 @@ export interface StreamEvent {
   project_id?: string;
   [key: string]: unknown;
 }
-
-const WS_URL = process.env.NEXT_PUBLIC_WS_URL || "ws://localhost:8080/ws/stream";
 
 export function useWebSocket() {
   const [connected, setConnected] = useState(false);
@@ -19,7 +18,7 @@ export function useWebSocket() {
 
   const connect = useCallback(() => {
     try {
-      const ws = new WebSocket(WS_URL);
+      const ws = new WebSocket(getWsUrl());
 
       ws.onopen = () => {
         setConnected(true);
