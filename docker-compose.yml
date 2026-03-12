@@ -13,6 +13,8 @@ services:
       - POSTGRES_PWD=temporal
       - POSTGRES_SEEDS=temporal-db
       - DYNAMIC_CONFIG_FILE_PATH=config/dynamicconfig/development-sql.yaml
+    volumes:
+      - ./config/dynamicconfig:/etc/temporal/config/dynamicconfig
     depends_on:
       temporal-db:
         condition: service_healthy
@@ -87,6 +89,21 @@ services:
     networks:
       - swe-net
 
+  # ─── Database Migrations ─────────────────────────────
+  swe-migrate:
+    image: postgres:16
+    volumes:
+      - ./migrations:/migrations
+      - ./scripts/init-db.sh:/init-db.sh
+    environment:
+      - DATABASE_URL=postgres://swe:swe@postgres:5432/swe
+    entrypoint: ["/bin/bash", "/init-db.sh"]
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - swe-net
+
   # ─── SWE API ─────────────────────────────────────────
   swe-api:
     build:
@@ -102,8 +119,8 @@ services:
       - LITELLM_URL=http://litellm:4000
       - REDIS_URL=redis://redis:6379
     depends_on:
-      postgres:
-        condition: service_healthy
+      swe-migrate:
+        condition: service_completed_successfully
       temporal:
         condition: service_started
       redis:
