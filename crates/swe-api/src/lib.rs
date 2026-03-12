@@ -63,6 +63,9 @@ pub fn create_router(state: AppState) -> Router {
         .route("/api/v1/artifacts/{id}/content", get(rest::artifacts::get_artifact_content))
         .route("/api/v1/artifacts/{id}/approve", post(rest::artifacts::approve_artifact))
         
+        // Settings
+        .route("/api/v1/settings", get(rest::settings::get_settings).put(rest::settings::update_settings))
+
         // WebSocket for live streaming
         .route("/ws/stream", get(websocket::stream_handler))
         

@@ -4,6 +4,7 @@ pub mod agents;
 pub mod artifacts;
 pub mod health;
 pub mod projects;
+pub mod settings;
 pub mod work;
 
 use axum::{http::StatusCode, Json};
