@@ -4,6 +4,8 @@
 # ─── Builder ───────────────────────────────────────────────
 FROM rust:1.94-bookworm AS builder
 
+RUN apt-get update && apt-get install -y protobuf-compiler && rm -rf /var/lib/apt/lists/*
+
 WORKDIR /build
 
 # Cache dependencies by building a dummy project first
@@ -16,16 +18,17 @@ COPY crates/swe-sandbox/Cargo.toml crates/swe-sandbox/Cargo.toml
 
 # Create dummy source files for dependency caching
 RUN mkdir -p crates/swe-core/src && echo "pub fn _dummy() {}" > crates/swe-core/src/lib.rs && \
-    mkdir -p crates/swe-temporal/src && echo "pub fn _dummy() {}" > crates/swe-temporal/src/lib.rs && \
-    mkdir -p crates/swe-api/src && echo "pub fn _dummy() {}" > crates/swe-api/src/lib.rs && \
+    mkdir -p crates/swe-temporal/src && echo "pub fn _dummy() {}" > crates/swe-temporal/src/lib.rs && echo "fn main() {}" > crates/swe-temporal/src/main.rs && \
+    mkdir -p crates/swe-api/src && echo "pub fn _dummy() {}" > crates/swe-api/src/lib.rs && echo "fn main() {}" > crates/swe-api/src/main.rs && \
     mkdir -p crates/swe-cli/src && echo "fn main() {}" > crates/swe-cli/src/main.rs && \
     mkdir -p crates/swe-sandbox/src && echo "pub fn _dummy() {}" > crates/swe-sandbox/src/lib.rs
 
 RUN cargo build --release 2>/dev/null || true
 
-# Copy actual source code
+# Copy actual source code and invalidate cargo cache for workspace crates
 COPY crates/ crates/
 COPY proto/ proto/
+RUN find crates/ -name "*.rs" -exec touch {} +
 
 # Build all binaries
 RUN cargo build --release

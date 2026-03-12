@@ -23,7 +23,9 @@ async fn main() -> Result<(), Box<dyn std::error::Error>> {
     let runtime = CoreRuntime::new_assume_tokio(RuntimeOptions::builder().build()?)?;
 
     let connection = Connection::connect(
-        ConnectionOptions::new(Url::from_str(&temporal_address)?).build(),
+        ConnectionOptions::new(Url::from_str(&temporal_address)?)
+            .identity("swe-worker".to_string())
+            .build(),
     )
     .await?;
     let client = Client::new(connection, ClientOptions::new("default").build())?;
