@@ -210,10 +210,10 @@ export default function ProjectDetailPage() {
                 <Link key={agent.id} href={`/projects/${projectId}/agents/${agent.id}`}>
                   <Card className="p-3 cursor-pointer hover:border-zinc-700 transition-colors">
                     <div className="flex items-center gap-3">
-                      <span className="text-lg">{ROLE_EMOJI[agent.role]}</span>
+                      <span className="text-lg">{ROLE_EMOJI[agent.role] ?? "🤖"}</span>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white truncate">
-                          {ROLE_LABEL[agent.role]}
+                          {ROLE_LABEL[agent.role] ?? agent.role}
                         </p>
                         <div className="flex items-center gap-1.5 mt-0.5">
                           <span className={`h-1.5 w-1.5 rounded-full ${statusIndicator(agent.status)}`} />

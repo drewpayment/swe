@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { getWsUrl } from "./config";
 
 export interface StreamEvent {
@@ -59,11 +59,11 @@ export function useWebSocket() {
     };
   }, []);
 
-  function sendMessage(data: object) {
+  const sendMessage = useCallback((data: object) => {
     if (wsRef.current?.readyState === WebSocket.OPEN) {
       wsRef.current.send(JSON.stringify(data));
     }
-  }
+  }, []);
 
   return { connected, events, sendMessage };
 }
