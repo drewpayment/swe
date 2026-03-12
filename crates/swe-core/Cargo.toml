@@ -13,3 +13,5 @@ thiserror = { workspace = true }
 uuid = { workspace = true }
 chrono = { workspace = true }
 dirs = "6.0"
+sqlx = { workspace = true }
+tokio = { workspace = true }

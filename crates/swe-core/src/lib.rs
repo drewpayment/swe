@@ -9,6 +9,7 @@
 //! - Error types
 
 pub mod config;
+pub mod db;
 pub mod errors;
 pub mod roles;
 pub mod types;
