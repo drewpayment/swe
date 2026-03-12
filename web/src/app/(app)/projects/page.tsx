@@ -74,10 +74,12 @@ export default function ProjectsPage() {
             Manage your engineering projects
           </p>
         </div>
-        <Button size="sm">
-          <Plus className="mr-2 h-4 w-4" />
-          New Project
-        </Button>
+        <Link href="/projects/new">
+          <Button size="sm">
+            <Plus className="mr-2 h-4 w-4" />
+            New Project
+          </Button>
+        </Link>
       </div>
 
       {error && (
@@ -127,11 +129,11 @@ export default function ProjectsPage() {
                       <div className="flex items-center gap-3 text-sm text-zinc-500">
                         <span className="flex items-center gap-1">
                           <Bot className="h-3.5 w-3.5" />
-                          {project.active_agent_ids.length}
+                          {project.active_agent_ids?.length ?? 0}
                         </span>
                         <span className="flex items-center gap-1">
                           <FileText className="h-3.5 w-3.5" />
-                          {project.artifact_ids.length}
+                          {project.artifact_ids?.length ?? 0}
                         </span>
                       </div>
                     </div>
