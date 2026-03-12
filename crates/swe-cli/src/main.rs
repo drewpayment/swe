@@ -6,6 +6,7 @@
 use clap::Parser;
 use tracing_subscriber::EnvFilter;
 
+mod api_client;
 mod commands;
 mod output;
 
