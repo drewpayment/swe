@@ -5,7 +5,12 @@ edition.workspace = true
 license.workspace = true
 description = "Temporal workflows and activities for SWE platform"
 
+[[bin]]
+name = "swe-worker"
+path = "src/main.rs"
+
 [dependencies]
+tracing-subscriber = { workspace = true }
 swe-core = { workspace = true }
 serde = { workspace = true }
 serde_json = { workspace = true }
@@ -17,6 +22,9 @@ chrono = { workspace = true }
 tracing = { workspace = true }
 reqwest = { version = "0.12", features = ["json"] }
 
-# Note: temporal-sdk-core is not yet stable on crates.io
-# Using stub implementations for now - will integrate when SDK stabilizes
-# temporal-sdk-core = { workspace = true }
+# Temporal Rust SDK (prerelease)
+temporalio-sdk = { workspace = true }
+temporalio-client = { workspace = true }
+temporalio-sdk-core = { workspace = true }
+temporalio-macros = { workspace = true }
+sqlx = { workspace = true }

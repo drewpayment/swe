@@ -44,9 +44,11 @@ tonic = "0.13"
 prost = "0.13"
 prost-types = "0.13"
 
-# Temporal
-temporal-sdk-core = "0.1"
-temporal-client = "0.1"
+# Temporal — prerelease Rust SDK
+temporalio-sdk = "0.1.0-alpha.1"
+temporalio-client = "0.1"
+temporalio-sdk-core = "0.1"
+temporalio-macros = "0.1"
 
 # Kubernetes
 kube = { version = "0.98", features = ["runtime", "derive"] }
