@@ -1,6 +1,6 @@
 // API client for the SWE Core API
 
-import type { Agent, ApiResponse, Artifact, Project, WorkItem } from "./types";
+import type { Agent, ApiResponse, Artifact, Project, Settings, WorkItem } from "./types";
 import { getApiBaseUrl } from "./config";
 
 const API_URL = getApiBaseUrl();
@@ -90,6 +90,18 @@ export async function approveArtifact(id: string, approved: boolean, comment?: s
   return fetchApi(`/api/v1/artifacts/${id}/approve`, {
     method: "POST",
     body: JSON.stringify({ approved, comment, approved_by: "user" }),
+  });
+}
+
+// Settings
+export async function getSettings(): Promise<ApiResponse<Settings>> {
+  return fetchApi("/api/v1/settings");
+}
+
+export async function updateSettings(data: Settings): Promise<ApiResponse<Settings>> {
+  return fetchApi("/api/v1/settings", {
+    method: "PUT",
+    body: JSON.stringify(data),
   });
 }
 

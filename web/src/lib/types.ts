@@ -185,3 +185,52 @@ export const STATUS_COLOR: Record<AgentStatus, string> = {
   error: "text-red-500",
   terminated: "text-gray-600",
 };
+
+// Settings types (mirrors swe-core Config struct)
+
+export interface PlatformSettings {
+  name: string;
+  log_level: string;
+  debug: boolean;
+}
+
+export interface LlmSettings {
+  proxy_url: string;
+  default_model: string;
+  role_models: Record<string, string>;
+}
+
+export interface KubernetesSettings {
+  kubeconfig?: string;
+  sandbox_namespace: string;
+  default_cpu_limit: string;
+  default_memory_limit: string;
+  sandbox_timeout_seconds: number;
+}
+
+export interface ApiSettings {
+  host: string;
+  port: number;
+  cors_enabled: boolean;
+  cors_origins: string[];
+}
+
+export interface DatabaseSettings {
+  url: string;
+  max_connections: number;
+}
+
+export interface TemporalSettings {
+  address: string;
+  namespace: string;
+  task_queue: string;
+}
+
+export interface Settings {
+  platform: PlatformSettings;
+  temporal: TemporalSettings;
+  llm: LlmSettings;
+  kubernetes: KubernetesSettings;
+  api: ApiSettings;
+  database: DatabaseSettings;
+}
