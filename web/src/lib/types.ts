@@ -84,10 +84,13 @@ export interface Agent {
   status: AgentStatus;
   project_id?: string;
   current_work_item_id?: string;
+  conversation_history: string[];
+  context?: string;
   created_at: string;
   updated_at: string;
   last_heartbeat?: string;
   workflow_id?: string;
+  sandbox_id?: string;
   tokens_consumed: number;
 }
 
@@ -99,10 +102,15 @@ export interface WorkItem {
   priority: Priority;
   project_id: string;
   assigned_agent_id?: string;
+  artifact_ids: string[];
+  depends_on: string[];
+  blocks: string[];
   branch_name?: string;
   pr_url?: string;
   created_at: string;
   updated_at: string;
+  started_at?: string;
+  completed_at?: string;
 }
 
 export interface Artifact {
@@ -111,11 +119,17 @@ export interface Artifact {
   artifact_type: ArtifactType;
   description?: string;
   project_id: string;
+  work_item_id?: string;
   created_by_agent_id: string;
+  content?: string;
+  storage_url?: string;
   mime_type: string;
   size_bytes: number;
   approval_status: ApprovalStatus;
+  approved_by?: string;
+  approval_comment?: string;
   version: number;
+  previous_version_id?: string;
   created_at: string;
   updated_at: string;
 }
