@@ -110,10 +110,10 @@ export default function AgentDetailPage() {
           Back to project
         </Link>
         <div className="flex items-center gap-4">
-          <span className="text-3xl">{ROLE_EMOJI[agent.role]}</span>
+          <span className="text-3xl">{ROLE_EMOJI[agent.role] ?? "🤖"}</span>
           <div>
             <h1 className="text-2xl font-bold text-white">
-              {ROLE_LABEL[agent.role]}
+              {ROLE_LABEL[agent.role] ?? agent.role}
             </h1>
             <p className="text-sm text-zinc-400">{agent.name}</p>
           </div>
@@ -124,7 +124,7 @@ export default function AgentDetailPage() {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="flex items-center gap-3">
             <Cpu className="h-5 w-5 text-blue-400" />
@@ -230,7 +230,7 @@ export default function AgentDetailPage() {
             </div>
             <div>
               <p className="text-zinc-500">Role</p>
-              <p className="text-zinc-300">{ROLE_LABEL[agent.role]}</p>
+              <p className="text-zinc-300">{ROLE_LABEL[agent.role] ?? agent.role}</p>
             </div>
             <div>
               <p className="text-zinc-500">Project ID</p>
