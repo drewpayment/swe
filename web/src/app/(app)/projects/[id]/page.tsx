@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { getProject, listAgents, listArtifacts, listWorkItems, sendMessage } from "@/lib/api";
+import { useWebSocket } from "@/lib/ws";
 
 const statusIndicator = (status: AgentStatus) => {
   const colors: Record<AgentStatus, string> = {
@@ -72,6 +73,9 @@ export default function ProjectDetailPage() {
   const [workItems, setWorkItems] = useState<WorkItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [chatSending, setChatSending] = useState(false);
+  const [chatError, setChatError] = useState<string | null>(null);
+  const { connected, events } = useWebSocket();
 
   const projectId = typeof id === "string" ? id : Array.isArray(id) ? id[0] : "";
 
@@ -106,6 +110,28 @@ export default function ProjectDetailPage() {
     fetchData();
   }, [projectId]);
 
+  useEffect(() => {
+    if (events.length === 0) return;
+    const latest = events[events.length - 1];
+    if (latest.project_id !== projectId) return;
+
+    const relevantTypes = ["agent_status", "artifact_created", "phase_change", "work_item_update"];
+    if (relevantTypes.includes(latest.type)) {
+      getProject(projectId).then((res) => {
+        if (res.success && res.data) setProject(res.data);
+      });
+      listAgents(projectId).then((res) => {
+        if (res.success && res.data) setAgents(res.data);
+      });
+      listArtifacts(projectId).then((res) => {
+        if (res.success && res.data) setArtifacts(res.data);
+      });
+      listWorkItems(projectId).then((res) => {
+        if (res.success && res.data) setWorkItems(res.data);
+      });
+    }
+  }, [events, projectId]);
+
   if (loading) {
     return (
       <div className="flex items-center justify-center h-64">
@@ -126,6 +152,24 @@ export default function ProjectDetailPage() {
     );
   }
 
+  async function handleSendChat() {
+    if (!chatInput.trim() || chatSending) return;
+    const orchestrator = agents.find((a) => a.role === "project_orchestrator");
+    if (!orchestrator) {
+      setChatError("No project orchestrator agent available");
+      return;
+    }
+    setChatSending(true);
+    setChatError(null);
+    const res = await sendMessage(orchestrator.id, chatInput.trim());
+    setChatSending(false);
+    if (res.success) {
+      setChatInput("");
+    } else {
+      setChatError(res.error || "Failed to send message");
+    }
+  }
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -136,9 +180,15 @@ export default function ProjectDetailPage() {
             {project.description || "No description"}
           </p>
         </div>
-        <Badge variant={phaseVariant[project.phase] ?? "default"} className="text-sm px-3 py-1">
-          Phase: {PHASE_LABEL[project.phase as ProjectPhase] ?? project.phase}
-        </Badge>
+        <div className="flex items-center gap-3">
+          <Badge variant={phaseVariant[project.phase] ?? "default"} className="text-sm px-3 py-1">
+            Phase: {PHASE_LABEL[project.phase as ProjectPhase] ?? project.phase}
+          </Badge>
+          <span
+            className={`h-2 w-2 rounded-full ${connected ? "bg-green-500" : "bg-red-500"}`}
+            title={connected ? "Live updates connected" : "Live updates disconnected"}
+          />
+        </div>
       </div>
 
       <div className="grid grid-cols-12 gap-6">
@@ -264,28 +314,17 @@ export default function ProjectDetailPage() {
                   onChange={(e) => setChatInput(e.target.value)}
                   placeholder="Message the orchestrator..."
                   className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none"
-                  onKeyDown={async (e) => {
-                    if (e.key === "Enter" && chatInput.trim()) {
-                      const orchestrator = agents.find((a) => a.role === "project_orchestrator");
-                      if (orchestrator) {
-                        await sendMessage(orchestrator.id, chatInput.trim());
-                      }
-                      setChatInput("");
-                    }
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSendChat();
                   }}
                 />
-                <Button size="sm" onClick={async () => {
-                  if (chatInput.trim()) {
-                    const orchestrator = agents.find((a) => a.role === "project_orchestrator");
-                    if (orchestrator) {
-                      await sendMessage(orchestrator.id, chatInput.trim());
-                    }
-                    setChatInput("");
-                  }
-                }}>
-                  <Send className="h-4 w-4" />
+                <Button size="sm" onClick={handleSendChat} disabled={chatSending || !chatInput.trim()}>
+                  {chatSending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
                 </Button>
               </div>
+              {chatError && (
+                <p className="text-xs text-red-400 mt-1">{chatError}</p>
+              )}
             </CardContent>
           </Card>
         </div>
