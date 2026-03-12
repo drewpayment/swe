@@ -10,7 +10,7 @@ import {
   FileText,
   Activity,
   Plus,
-  Zap,
+
   Loader2,
   AlertCircle,
 } from "lucide-react";
@@ -99,18 +99,12 @@ export default function DashboardPage() {
             Overview of your SWE platform
           </p>
         </div>
-        <div className="flex gap-3">
-          <Button variant="secondary" size="sm">
-            <Zap className="mr-2 h-4 w-4" />
-            swe run
+        <Link href="/projects/new">
+          <Button size="sm">
+            <Plus className="mr-2 h-4 w-4" />
+            New Project
           </Button>
-          <Link href="/projects">
-            <Button size="sm">
-              <Plus className="mr-2 h-4 w-4" />
-              New Project
-            </Button>
-          </Link>
-        </div>
+        </Link>
       </div>
 
       {error && (
@@ -123,7 +117,7 @@ export default function DashboardPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
         <Card>
           <CardContent className="flex items-center gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-900/50">
