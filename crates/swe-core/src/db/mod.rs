@@ -1,5 +1,10 @@
 //! Database connection pool and helpers.
 
+pub mod agents;
+pub mod artifacts;
+pub mod projects;
+pub mod work_items;
+
 use sqlx::postgres::PgPoolOptions;
 
 pub type Pool = sqlx::PgPool;

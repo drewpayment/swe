@@ -31,6 +31,12 @@ pub enum AgentRole {
     Platform,
 }
 
+impl Default for AgentRole {
+    fn default() -> Self {
+        Self::Coder
+    }
+}
+
 impl AgentRole {
     /// Get a human-readable name for this role.
     pub fn display_name(&self) -> &'static str {

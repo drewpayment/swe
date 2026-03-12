@@ -38,6 +38,12 @@ pub enum ArtifactType {
     Other,
 }
 
+impl Default for ArtifactType {
+    fn default() -> Self {
+        Self::Other
+    }
+}
+
 /// Approval status for artifacts that require review.
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
