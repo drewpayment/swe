@@ -36,24 +36,12 @@ pub struct ProjectSummary {
 /// List all projects.
 pub async fn list_projects(
     State(state): State<AppState>,
-) -> Result<Json<ApiResponse<Vec<ProjectSummary>>>, (StatusCode, Json<ApiResponse<()>>)> {
+) -> Result<Json<ApiResponse<Vec<Project>>>, (StatusCode, Json<ApiResponse<()>>)> {
     let projects = swe_core::db::projects::list(&state.db)
         .await
         .map_err(error_response)?;
 
-    let summaries: Vec<ProjectSummary> = projects
-        .into_iter()
-        .map(|p| ProjectSummary {
-            id: p.id,
-            name: p.name,
-            phase: p.phase,
-            status: p.status,
-            active_agent_count: p.active_agent_ids.len(),
-            created_at: p.created_at,
-        })
-        .collect();
-
-    Ok(Json(ApiResponse::success(summaries)))
+    Ok(Json(ApiResponse::success(projects)))
 }
 
 /// Create a new project.

@@ -198,7 +198,7 @@ export default function DashboardPage() {
                         </div>
                         <div>
                           <h3 className="font-medium text-white">{project.name}</h3>
-                          <p className="text-xs text-zinc-500">Updated {timeAgo(project.updated_at)}</p>
+                          <p className="text-xs text-zinc-500">Updated {timeAgo(project.updated_at ?? project.created_at)}</p>
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
@@ -207,11 +207,11 @@ export default function DashboardPage() {
                         </Badge>
                         <div className="flex items-center gap-1 text-xs text-zinc-500">
                           <Bot className="h-3 w-3" />
-                          {project.active_agent_ids.length}
+                          {project.active_agent_ids?.length ?? 0}
                         </div>
                         <div className="flex items-center gap-1 text-xs text-zinc-500">
                           <FileText className="h-3 w-3" />
-                          {project.artifact_ids.length}
+                          {project.artifact_ids?.length ?? 0}
                         </div>
                       </div>
                     </div>

@@ -2,7 +2,23 @@
 
 import type { Agent, ApiResponse, Artifact, Project, WorkItem } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8080";
+function getApiUrl(): string {
+  // Use env var if set
+  if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
+  // In browser: derive from current hostname (OrbStack domains, etc.)
+  if (typeof window !== "undefined") {
+    const host = window.location.hostname;
+    // OrbStack: swe-web.swe.orb.local → swe-api.swe.orb.local
+    if (host.endsWith(".orb.local")) {
+      return `http://swe-api.swe.orb.local`;
+    }
+    return "http://localhost:8080";
+  }
+  // Server-side: use Docker internal network or localhost
+  return "http://swe-api:8080";
+}
+
+const API_URL = getApiUrl();
 
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
   try {
