@@ -5,7 +5,12 @@ edition.workspace = true
 license.workspace = true
 description = "REST and gRPC API server for SWE platform"
 
+[[bin]]
+name = "swe-api"
+path = "src/main.rs"
+
 [dependencies]
+tracing-subscriber = { workspace = true }
 swe-core = { workspace = true }
 swe-temporal = { workspace = true }
 serde = { workspace = true }
@@ -20,6 +25,7 @@ uuid = { workspace = true }
 chrono = { workspace = true }
 tracing = { workspace = true }
 thiserror = { workspace = true }
+sqlx = { workspace = true }
 
 [build-dependencies]
 tonic-build = "0.13"
