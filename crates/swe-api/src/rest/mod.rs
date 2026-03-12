@@ -6,7 +6,7 @@ pub mod health;
 pub mod projects;
 pub mod work;
 
-use axum::{http::StatusCode, response::IntoResponse, Json};
+use axum::{http::StatusCode, Json};
 use serde::Serialize;
 
 /// Standard API response wrapper.

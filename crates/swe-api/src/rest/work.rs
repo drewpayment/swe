@@ -1,7 +1,7 @@
 //! Work item API endpoints.
 
 use axum::{
-    extract::{Path, Query},
+    extract::{Path, Query, State},
     http::StatusCode,
     Json,
 };
@@ -11,6 +11,7 @@ use uuid::Uuid;
 use swe_core::{Priority, WorkItem};
 
 use super::{ApiResponse, error_response};
+use crate::AppState;
 
 /// Query parameters for listing work items.
 #[derive(Debug, Deserialize)]
@@ -30,19 +31,23 @@ pub struct CreateWorkItemRequest {
 
 /// List work items.
 pub async fn list_work_items(
+    State(state): State<AppState>,
     Query(query): Query<ListWorkQuery>,
-) -> Json<ApiResponse<Vec<WorkItem>>> {
-    // Stub - would query database
-    tracing::debug!(project_id = ?query.project_id, "Listing work items");
-    Json(ApiResponse::success(Vec::new()))
+) -> Result<Json<ApiResponse<Vec<WorkItem>>>, (StatusCode, Json<ApiResponse<()>>)> {
+    let items = swe_core::db::work_items::list(&state.db, query.project_id)
+        .await
+        .map_err(error_response)?;
+
+    Ok(Json(ApiResponse::success(items)))
 }
 
 /// Create a work item.
 pub async fn create_work_item(
+    State(state): State<AppState>,
     Json(request): Json<CreateWorkItemRequest>,
-) -> (StatusCode, Json<ApiResponse<WorkItem>>) {
+) -> Result<(StatusCode, Json<ApiResponse<WorkItem>>), (StatusCode, Json<ApiResponse<()>>)> {
     let mut work_item = WorkItem::new(&request.title, request.project_id);
-    
+
     if let Some(desc) = request.description {
         work_item.description = Some(desc);
     }
@@ -50,18 +55,25 @@ pub async fn create_work_item(
         work_item.priority = priority;
     }
 
-    // TODO: Persist to database
+    swe_core::db::work_items::insert(&state.db, &work_item)
+        .await
+        .map_err(error_response)?;
+
     // TODO: Signal project workflow
 
     tracing::info!(work_item_id = %work_item.id, "Created work item");
 
-    (StatusCode::CREATED, Json(ApiResponse::success(work_item)))
+    Ok((StatusCode::CREATED, Json(ApiResponse::success(work_item))))
 }
 
 /// Get a work item by ID.
 pub async fn get_work_item(
+    State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<ApiResponse<WorkItem>>, (StatusCode, Json<ApiResponse<()>>)> {
-    // Stub - would query database
-    Err(error_response(swe_core::Error::WorkItemNotFound(id.to_string())))
+    let item = swe_core::db::work_items::get(&state.db, id)
+        .await
+        .map_err(error_response)?;
+
+    Ok(Json(ApiResponse::success(item)))
 }

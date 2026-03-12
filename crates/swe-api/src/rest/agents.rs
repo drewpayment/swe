@@ -1,7 +1,7 @@
 //! Agent API endpoints.
 
 use axum::{
-    extract::{Path, Query},
+    extract::{Path, Query, State},
     http::StatusCode,
     Json,
 };
@@ -11,6 +11,7 @@ use uuid::Uuid;
 use swe_core::Agent;
 
 use super::{ApiResponse, error_response};
+use crate::AppState;
 
 /// Query parameters for listing agents.
 #[derive(Debug, Deserialize)]
@@ -33,29 +34,37 @@ pub struct SendMessageResponse {
 
 /// List agents.
 pub async fn list_agents(
+    State(state): State<AppState>,
     Query(query): Query<ListAgentsQuery>,
-) -> Json<ApiResponse<Vec<Agent>>> {
-    // Stub - would query database filtered by project_id
-    tracing::debug!(project_id = ?query.project_id, "Listing agents");
-    Json(ApiResponse::success(Vec::new()))
+) -> Result<Json<ApiResponse<Vec<Agent>>>, (StatusCode, Json<ApiResponse<()>>)> {
+    let agents = swe_core::db::agents::list(&state.db, query.project_id)
+        .await
+        .map_err(error_response)?;
+
+    Ok(Json(ApiResponse::success(agents)))
 }
 
 /// Get an agent by ID.
 pub async fn get_agent(
+    State(state): State<AppState>,
     Path(id): Path<Uuid>,
 ) -> Result<Json<ApiResponse<Agent>>, (StatusCode, Json<ApiResponse<()>>)> {
-    // Stub - would query database
-    Err(error_response(swe_core::Error::AgentNotFound(id.to_string())))
+    let agent = swe_core::db::agents::get(&state.db, id)
+        .await
+        .map_err(error_response)?;
+
+    Ok(Json(ApiResponse::success(agent)))
 }
 
 /// Send a message to an agent.
 pub async fn send_message(
+    State(_state): State<AppState>,
     Path(id): Path<Uuid>,
     Json(request): Json<SendMessageRequest>,
 ) -> Result<Json<ApiResponse<SendMessageResponse>>, (StatusCode, Json<ApiResponse<()>>)> {
-    // Stub - would signal Temporal workflow
-    tracing::info!(agent_id = %id, "Sending message to agent");
-    
+    // TODO: Signal Temporal workflow with agent message
+    tracing::info!(agent_id = %id, content_len = request.content.len(), "Sending message to agent");
+
     Ok(Json(ApiResponse::success(SendMessageResponse {
         message_id: Uuid::new_v4(),
         acknowledged: true,
