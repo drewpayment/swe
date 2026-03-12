@@ -1,55 +1,88 @@
 //! Status and doctor commands.
 
 use colored::Colorize;
+use serde_json::Value;
+
+use crate::api_client::ApiClient;
 
 pub async fn execute(api_url: &str) -> anyhow::Result<()> {
     println!("{}", "SWE Platform Status".bold());
-    println!("{}", "═".repeat(40));
+    println!("{}", "=".repeat(40));
     println!();
-    
-    // Check API
+
+    let client = ApiClient::new(api_url);
+
+    // Check API health
     print!("  API Server ({})... ", api_url);
-    match reqwest::get(&format!("{}/health", api_url)).await {
-        Ok(resp) if resp.status().is_success() => {
-            println!("{}", "✅ healthy".green());
-        }
-        Ok(resp) => {
-            println!("{}", format!("⚠️  status {}", resp.status()).yellow());
-        }
-        Err(_) => {
-            println!("{}", "❌ unreachable".red());
-        }
+    match client.health().await {
+        Ok(true) => println!("{}", "UP".green()),
+        _ => println!("{}", "DOWN".red()),
     }
 
-    // Stub checks
-    println!("  Temporal Server... {}", "❌ not configured".red());
-    println!("  LiteLLM Proxy...  {}", "❌ not configured".red());
-    println!("  Kubernetes...     {}", "❌ not configured".red());
-    println!("  PostgreSQL...     {}", "❌ not configured".red());
-    println!("  Redis...          {}", "❌ not configured".red());
+    // Count projects
+    let project_count = match client.get::<Value>("/api/v1/projects").await {
+        Ok(resp) if resp.success => resp
+            .data
+            .as_ref()
+            .and_then(|d| d.as_array())
+            .map(|a| a.len())
+            .unwrap_or(0),
+        _ => 0,
+    };
+
+    // Count agents
+    let agent_count = match client.get::<Value>("/api/v1/agents").await {
+        Ok(resp) if resp.success => resp
+            .data
+            .as_ref()
+            .and_then(|d| d.as_array())
+            .map(|a| a.len())
+            .unwrap_or(0),
+        _ => 0,
+    };
+
     println!();
-    println!("  Active Projects:  0");
-    println!("  Running Agents:   0");
-    println!("  Active Sandboxes: 0");
-    
+    println!("  Active Projects:  {}", project_count);
+    println!("  Running Agents:   {}", agent_count);
+
     Ok(())
 }
 
 pub async fn doctor() -> anyhow::Result<()> {
     let checks = vec![
+        ("Docker", check_command("docker", &["--version"]).await),
+        (
+            "Docker Compose",
+            check_command("docker", &["compose", "version"]).await,
+        ),
+        (
+            "kubectl",
+            check_command("kubectl", &["version", "--client", "--short"]).await,
+        ),
         ("Rust", check_command("rustc", &["--version"]).await),
         ("Cargo", check_command("cargo", &["--version"]).await),
-        ("Docker/OrbStack", check_command("docker", &["--version"]).await),
-        ("kubectl", check_command("kubectl", &["version", "--client", "--short"]).await),
-        ("Temporal CLI", check_command("temporal", &["--version"]).await),
+        (
+            "Temporal CLI",
+            check_command("temporal", &["--version"]).await,
+        ),
         ("Node.js", check_command("node", &["--version"]).await),
         ("Git", check_command("git", &["--version"]).await),
     ];
 
     for (name, result) in checks {
         match result {
-            Ok(version) => println!("  {} {} — {}", "✅".green(), name, version.trim()),
-            Err(_) => println!("  {} {} — {}", "❌".red(), name, "not found".red()),
+            Ok(version) => println!(
+                "  {} {} -- {}",
+                "OK".green(),
+                name,
+                version.trim()
+            ),
+            Err(_) => println!(
+                "  {} {} -- {}",
+                "MISSING".red(),
+                name,
+                "not found".red()
+            ),
         }
     }
 
