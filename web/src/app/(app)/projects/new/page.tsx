@@ -4,15 +4,19 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Loader2 } from "lucide-react";
+import { ArrowLeft, Loader2, Globe, FolderOpen, Clock } from "lucide-react";
 import Link from "next/link";
 import { createProject } from "@/lib/api";
+
+type RepoSource = "remote" | "local" | "later";
 
 export default function NewProjectPage() {
   const router = useRouter();
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [repoSource, setRepoSource] = useState<RepoSource>("remote");
   const [repoUrl, setRepoUrl] = useState("");
+  const [workingDirectory, setWorkingDirectory] = useState("");
   const [initialPrompt, setInitialPrompt] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -24,12 +28,19 @@ export default function NewProjectPage() {
     setSubmitting(true);
     setError(null);
 
-    const res = await createProject({
+    const payload: Parameters<typeof createProject>[0] = {
       name: name.trim(),
       description: description.trim() || undefined,
-      repo_url: repoUrl.trim() || undefined,
       initial_prompt: initialPrompt.trim() || undefined,
-    });
+    };
+
+    if (repoSource === "remote" && repoUrl.trim()) {
+      payload.repo_url = repoUrl.trim();
+    } else if (repoSource === "local" && workingDirectory.trim()) {
+      payload.working_directory = workingDirectory.trim();
+    }
+
+    const res = await createProject(payload);
 
     if (res.success && res.data) {
       router.push(`/projects/${res.data.id}`);
@@ -41,6 +52,12 @@ export default function NewProjectPage() {
 
   const inputClass =
     "w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none";
+
+  const repoSourceOptions: { value: RepoSource; label: string; icon: typeof Globe }[] = [
+    { value: "remote", label: "Remote Repository", icon: Globe },
+    { value: "local", label: "Local Directory", icon: FolderOpen },
+    { value: "later", label: "I'll add one later", icon: Clock },
+  ];
 
   return (
     <div className="space-y-6 max-w-2xl">
@@ -91,18 +108,59 @@ export default function NewProjectPage() {
               />
             </div>
 
+            {/* Repo source selector */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">
-                Repository URL
+              <label className="block text-sm font-medium text-zinc-300 mb-2">
+                Code Source
               </label>
-              <input
-                type="url"
-                value={repoUrl}
-                onChange={(e) => setRepoUrl(e.target.value)}
-                placeholder="https://github.com/org/repo"
-                className={inputClass}
-              />
+              <div className="grid grid-cols-3 gap-2">
+                {repoSourceOptions.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setRepoSource(opt.value)}
+                    className={`flex flex-col items-center gap-1.5 rounded-lg border px-3 py-3 text-xs font-medium transition-colors ${
+                      repoSource === opt.value
+                        ? "border-blue-500 bg-blue-500/10 text-blue-400"
+                        : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300"
+                    }`}
+                  >
+                    <opt.icon className="h-4 w-4" />
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
+
+            {repoSource === "remote" && (
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+                  Repository URL
+                </label>
+                <input
+                  type="url"
+                  value={repoUrl}
+                  onChange={(e) => setRepoUrl(e.target.value)}
+                  placeholder="https://github.com/org/repo"
+                  className={inputClass}
+                />
+              </div>
+            )}
+
+            {repoSource === "local" && (
+              <div>
+                <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+                  Local Directory Path
+                </label>
+                <input
+                  type="text"
+                  value={workingDirectory}
+                  onChange={(e) => setWorkingDirectory(e.target.value)}
+                  placeholder="~/dev/my-project"
+                  className={inputClass}
+                />
+              </div>
+            )}
 
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">
