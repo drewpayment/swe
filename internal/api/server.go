@@ -238,6 +238,24 @@ func (s *Server) createProject(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	// Detect repo source and update project
+	repoSource := "none"
+	var workingDir *string
+	if req.RepoURL != nil && *req.RepoURL != "" {
+		repoSource = "remote"
+	} else if req.WorkingDirectory != nil && *req.WorkingDirectory != "" {
+		repoSource = "local"
+		workingDir = req.WorkingDirectory
+	}
+	if repoSource != "none" {
+		if err := s.db.UpdateProjectRepoInfo(r.Context(), project.ID, repoSource, workingDir); err != nil {
+			slog.Warn("failed to update project repo info", "error", err)
+		} else {
+			project.RepoSource = repoSource
+			project.WorkingDirectory = workingDir
+		}
+	}
+
 	// Start a Temporal workflow for the project if Temporal is connected
 	if s.temporal != nil {
 		workflowID := fmt.Sprintf("project-%s", project.ID)
