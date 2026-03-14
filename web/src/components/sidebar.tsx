@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
@@ -9,7 +10,10 @@ import {
   Settings,
   Activity,
   Bot,
+  Bell,
 } from "lucide-react";
+import { getUnreadCount } from "@/lib/api";
+import type { StreamEvent } from "@/lib/ws";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -17,8 +21,43 @@ const navItems = [
   { href: "/settings", label: "Settings", icon: Settings },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  connected?: boolean;
+  events?: StreamEvent[];
+}
+
+export function Sidebar({ connected, events }: SidebarProps) {
   const pathname = usePathname();
+  const [unreadCount, setUnreadCount] = useState(0);
+  const lastEventCount = useRef(0);
+
+  // Poll unread count every 15 seconds
+  useEffect(() => {
+    async function fetchCount() {
+      const res = await getUnreadCount();
+      if (res.success && res.data) {
+        setUnreadCount(res.data.count);
+      }
+    }
+
+    fetchCount();
+    const interval = setInterval(fetchCount, 15000);
+    return () => clearInterval(interval);
+  }, []);
+
+  // Increment count in real-time when notification_created events arrive
+  useEffect(() => {
+    if (!events || events.length === 0) return;
+
+    const newEvents = events.slice(lastEventCount.current);
+    lastEventCount.current = events.length;
+
+    for (const event of newEvents) {
+      if (event.type === "notification_created") {
+        setUnreadCount((prev) => prev + 1);
+      }
+    }
+  }, [events]);
 
   return (
     <aside className="flex h-screen w-64 flex-col border-r border-zinc-800 bg-zinc-950">
@@ -33,6 +72,24 @@ export function Sidebar() {
             Agentic Platform
           </p>
         </div>
+      </div>
+
+      {/* Notification bell */}
+      <div className="border-b border-zinc-800 px-3 py-3">
+        <Link
+          href="/projects"
+          className="flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+        >
+          <div className="relative">
+            <Bell className="h-4 w-4" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white">
+                {unreadCount > 99 ? "99+" : unreadCount}
+              </span>
+            )}
+          </div>
+          Notifications
+        </Link>
       </div>
 
       {/* Navigation */}
@@ -64,8 +121,13 @@ export function Sidebar() {
           <Activity className="h-3 w-3" />
           <span>v0.1.0</span>
           <span className="ml-auto flex items-center gap-1">
-            <span className="h-1.5 w-1.5 rounded-full bg-yellow-500" />
-            Offline
+            <span
+              className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                connected ? "bg-green-500" : "bg-yellow-500"
+              )}
+            />
+            {connected ? "Connected" : "Offline"}
           </span>
         </div>
       </div>
