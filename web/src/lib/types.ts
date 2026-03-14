@@ -226,6 +226,10 @@ export interface TemporalSettings {
   task_queue: string;
 }
 
+export interface RedisSettings {
+  url: string;
+}
+
 export interface Settings {
   platform: PlatformSettings;
   temporal: TemporalSettings;
@@ -233,4 +237,5 @@ export interface Settings {
   kubernetes: KubernetesSettings;
   api: ApiSettings;
   database: DatabaseSettings;
+  redis: RedisSettings;
 }
