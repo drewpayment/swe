@@ -1,6 +1,6 @@
 // API client for the SWE Core API
 
-import type { Agent, ApiResponse, Artifact, Project, Settings, WorkItem } from "./types";
+import type { Agent, ApiResponse, Artifact, ChatMessage, Notification, Project, Settings, WorkItem } from "./types";
 import { getApiBaseUrl } from "./config";
 
 const API_URL = getApiBaseUrl();
@@ -33,6 +33,7 @@ export async function createProject(data: {
   name: string;
   description?: string;
   repo_url?: string;
+  working_directory?: string;
   initial_prompt?: string;
 }): Promise<ApiResponse<Project>> {
   return fetchApi("/api/v1/projects", {
@@ -114,4 +115,61 @@ export async function checkHealth(): Promise<{ status: string; version: string }
   } catch {
     return null;
   }
+}
+
+// Service Health (checks all platform services)
+export async function checkServiceHealth(): Promise<ApiResponse<Record<string, string>>> {
+  return fetchApi("/api/v1/health/services");
+}
+
+// Create Agent
+export async function createAgent(data: {
+  name: string;
+  role: string;
+  project_id?: string;
+}): Promise<ApiResponse<Agent>> {
+  return fetchApi("/api/v1/agents", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+// Delete Agent
+export async function deleteAgent(id: string): Promise<ApiResponse<{ deleted: string }>> {
+  return fetchApi(`/api/v1/agents/${id}`, { method: "DELETE" });
+}
+
+// Cleanup stale agents for a project
+export async function cleanupStaleAgents(projectId: string): Promise<ApiResponse<{ cleaned: number; total: number }>> {
+  return fetchApi(`/api/v1/agents/cleanup?project_id=${projectId}`, { method: "POST" });
+}
+
+// Chat messages
+export async function listChatMessages(projectId: string): Promise<ApiResponse<ChatMessage[]>> {
+  return fetchApi(`/api/v1/messages?project_id=${projectId}`);
+}
+
+export async function listAgentChatMessages(agentId: string): Promise<ApiResponse<ChatMessage[]>> {
+  return fetchApi(`/api/v1/agents/${agentId}/messages`);
+}
+
+// Notifications
+export async function listNotifications(projectId?: string, unreadOnly?: boolean): Promise<ApiResponse<Notification[]>> {
+  const params = new URLSearchParams();
+  if (projectId) params.set("project_id", projectId);
+  if (unreadOnly) params.set("unread_only", "true");
+  return fetchApi(`/api/v1/notifications?${params}`);
+}
+
+export async function getUnreadCount(): Promise<ApiResponse<{ count: number }>> {
+  return fetchApi("/api/v1/notifications/unread-count");
+}
+
+export async function markNotificationRead(id: string): Promise<ApiResponse<{ marked: string }>> {
+  return fetchApi(`/api/v1/notifications/${id}/read`, { method: "PATCH" });
+}
+
+export async function markAllNotificationsRead(projectId?: string): Promise<ApiResponse<{ status: string }>> {
+  const params = projectId ? `?project_id=${projectId}` : "";
+  return fetchApi(`/api/v1/notifications/mark-all-read${params}`, { method: "POST" });
 }

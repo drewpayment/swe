@@ -68,6 +68,8 @@ export interface Project {
   phase: ProjectPhase;
   status: ProjectStatus;
   repo_url?: string;
+  working_directory?: string;
+  repo_source?: "local" | "remote" | "none";
   active_agent_ids: string[];
   artifact_ids: string[];
   work_item_ids: string[];
@@ -132,6 +134,30 @@ export interface Artifact {
   previous_version_id?: string;
   created_at: string;
   updated_at: string;
+}
+
+export interface ChatMessage {
+  id: string;
+  project_id: string;
+  agent_id?: string;
+  role: "user" | "assistant" | "system";
+  content: string;
+  created_at: string;
+}
+
+export type NotificationType = "action_needed" | "status_update" | "approval_request" | "info";
+
+export interface Notification {
+  id: string;
+  project_id: string;
+  agent_id?: string;
+  type: NotificationType;
+  priority: "low" | "normal" | "high" | "critical";
+  title: string;
+  body: string;
+  read: boolean;
+  action_url?: string;
+  created_at: string;
 }
 
 export interface ApiResponse<T> {
