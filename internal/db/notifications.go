@@ -52,6 +52,46 @@ func (p *Pool) ListNotifications(ctx context.Context, projectID string, limit, o
 	return scanNotifications(rows)
 }
 
+// ListNotificationsFiltered returns notifications with optional unread filter and total count.
+func (p *Pool) ListNotificationsFiltered(ctx context.Context, projectID string, unreadOnly bool, limit, offset int) ([]core.Notification, int, error) {
+	if limit <= 0 {
+		limit = 50
+	}
+
+	// Get total count
+	countQuery := `SELECT COUNT(*) FROM notifications WHERE project_id = $1`
+	if unreadOnly {
+		countQuery += ` AND read = FALSE`
+	}
+	var total int
+	if err := p.QueryRow(ctx, countQuery, projectID).Scan(&total); err != nil {
+		return nil, 0, err
+	}
+
+	// Get paginated results
+	query := `
+		SELECT id, project_id, agent_id, type, priority, title, body, read, action_url, created_at
+		FROM notifications
+		WHERE project_id = $1`
+	if unreadOnly {
+		query += ` AND read = FALSE`
+	}
+	query += ` ORDER BY created_at DESC LIMIT $2 OFFSET $3`
+
+	rows, err := p.Query(ctx, query, projectID, limit, offset)
+	if err != nil {
+		return nil, 0, err
+	}
+	defer rows.Close()
+
+	notifications, err := scanNotifications(rows)
+	if err != nil {
+		return nil, 0, err
+	}
+
+	return notifications, total, nil
+}
+
 // UnreadNotificationCount returns the count of unread notifications for a project.
 func (p *Pool) UnreadNotificationCount(ctx context.Context, projectID string) (int, error) {
 	var count int
