@@ -42,6 +42,8 @@ Human <--inbox/chat--> Cosmo (orchestrator)
 
 ### Schema Changes
 
+Migration file: `migrations/003_cosmo_opencode.sql`
+
 Add to `projects` table:
 
 ```sql
@@ -66,20 +68,19 @@ ALTER TABLE projects ADD COLUMN repo_source TEXT NOT NULL DEFAULT 'none'
 
 ### Go Type Changes
 
-```go
-type Project struct {
-    // ... existing fields ...
-    WorkingDirectory *string       `json:"working_directory,omitempty" db:"working_directory"`
-    RepoSource       string        `json:"repo_source" db:"repo_source"`
-}
+New fields added to the existing `Project` struct (which already has ID, Name, Description, Phase, Status, RepoURL, ActiveAgentIDs, ArtifactIDs, Decisions, WorkflowID, InitialPrompt, CreatedAt, UpdatedAt):
 
-type CreateProjectRequest struct {
-    Name             string  `json:"name"`
-    Description      *string `json:"description,omitempty"`
-    RepoURL          *string `json:"repo_url,omitempty"`
-    WorkingDirectory *string `json:"working_directory,omitempty"`
-    InitialPrompt    *string `json:"initial_prompt,omitempty"`
-}
+```go
+// Add to existing Project struct:
+WorkingDirectory *string `json:"working_directory,omitempty" db:"working_directory"`
+RepoSource       string  `json:"repo_source" db:"repo_source"`
+```
+
+New field added to the existing `CreateProjectRequest` (which already has Name, Description, RepoURL, InitialPrompt):
+
+```go
+// Add to existing CreateProjectRequest:
+WorkingDirectory *string `json:"working_directory,omitempty"`
 ```
 
 ## Section 2: OpenCode Server Lifecycle
@@ -97,11 +98,38 @@ Each project with a configured repository gets its own `opencode serve` instance
 
 ### Port Management
 
-Each OpenCode server gets a port from a pool (9100-9199). The worker tracks which ports are in use. Stored in-memory with Redis backup for crash recovery.
+Each OpenCode server gets a port from a pool (9100-9199). Allocation strategy:
+
+- **In-memory map** in the worker process: `map[string]int` (project ID → port)
+- **Redis hash** `swe:opencode:ports` mirrors the map for crash recovery. On worker startup, it reads Redis to reclaim any ports from a previous instance.
+- **On allocation**: atomically set in Redis hash (`HSETNX swe:opencode:ports <project-id> <port>`), then update in-memory map
+- **On deallocation**: delete from Redis hash and in-memory map
+- **Stale port cleanup**: on startup, health-check all ports in Redis. If a port's server is unreachable, free it.
+- **Single worker assumption for MVP**: no distributed locking needed. If horizontal scaling is added later, use Redis `HSETNX` for atomic allocation.
 
 ### Agent Sessions
 
 Each specialist agent creates an OpenCode session via the HTTP API. Sessions persist conversation context across tasks — the architect can reference previous design decisions in follow-up work.
+
+### OpenCode Invocation Details
+
+**Binary**: `opencode` must be in PATH (installed via `go install` or binary download).
+
+**Starting a server**: `exec.Command("opencode", "serve", "--port", "<port>")` with `cmd.Dir` set to the project's `working_directory`. The worker holds a reference to the `*exec.Cmd` for lifecycle management.
+
+**Configuration**: OpenCode reads `opencode.json` from the working directory. The platform writes a minimal config before starting:
+```json
+{
+    "provider": "<from platform LLM settings>",
+    "model": "<from platform LLM settings>"
+}
+```
+
+**OpenCode HTTP API endpoints used** (see [OpenCode Server Docs](https://opencode.ai/docs/server/)):
+- `GET /api/health` — health check
+- `POST /api/session` — create a new session, returns `{ "id": "..." }`
+- `POST /api/session/{id}/message` — send a message, returns the response
+- `GET /api/session/{id}` — get session state including conversation history
 
 ### Temporal Activity: `StartOpenCodeServer`
 
@@ -116,14 +144,16 @@ type StartOpenCodeServerOutput struct {
 }
 ```
 
+Implementation: allocates a port, writes `opencode.json` config, spawns `opencode serve --port <port>`, waits for health check to pass (up to 30s), returns the URL.
+
 ### Temporal Activity: `ExecuteCodeTask`
 
 ```go
 type ExecuteCodeTaskInput struct {
-    ServerURL   string `json:"server_url"`
-    SessionID   string `json:"session_id"`
-    AgentRole   string `json:"agent_role"`
-    TaskPrompt  string `json:"task_prompt"`
+    ServerURL      string `json:"server_url"`
+    SessionID      string `json:"session_id"`
+    AgentRole      string `json:"agent_role"`
+    TaskPrompt     string `json:"task_prompt"`
     ProjectContext string `json:"project_context"`
 }
 type ExecuteCodeTaskOutput struct {
@@ -134,6 +164,8 @@ type ExecuteCodeTaskOutput struct {
     Error        string   `json:"error,omitempty"`
 }
 ```
+
+Implementation: sends `POST /api/session/{id}/message` with the task prompt. Parses the response to extract file changes and commits (from OpenCode's structured output). Timeout: 5 minutes per task (coding can take time).
 
 ### Responsibility Split
 
@@ -157,7 +189,7 @@ CREATE TABLE notifications (
     project_id UUID NOT NULL REFERENCES projects(id) ON DELETE CASCADE,
     agent_id UUID REFERENCES agents(id) ON DELETE SET NULL,
     type TEXT NOT NULL CHECK (type IN ('action_needed', 'status_update', 'approval_request', 'info')),
-    priority TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high', 'urgent')),
+    priority TEXT NOT NULL DEFAULT 'normal' CHECK (priority IN ('low', 'normal', 'high', 'critical')),
     title TEXT NOT NULL,
     body TEXT NOT NULL,
     read BOOLEAN NOT NULL DEFAULT FALSE,
@@ -224,17 +256,26 @@ Notifications are written in Cosmo's personality — friendly, concise, actionab
 
 ```go
 type CreateNotificationInput struct {
-    ProjectID string `json:"project_id"`
-    AgentID   string `json:"agent_id,omitempty"`
-    Type      string `json:"type"`
-    Priority  string `json:"priority"`
-    Title     string `json:"title"`
-    Body      string `json:"body"`
-    ActionURL string `json:"action_url,omitempty"`
+    ProjectID string  `json:"project_id"`
+    AgentID   *string `json:"agent_id,omitempty"`
+    Type      string  `json:"type"`
+    Priority  string  `json:"priority"`
+    Title     string  `json:"title"`
+    Body      string  `json:"body"`
+    ActionURL *string `json:"action_url,omitempty"`
 }
 ```
 
+Note: `AgentID` and `ActionURL` are `*string` (nullable) to match the DB schema. Notifications from Cosmo directly have `AgentID = nil`.
+
 Creates the DB record and broadcasts via WebSocket.
+
+### API Pagination
+
+`GET /api/v1/notifications` supports pagination:
+- `limit` (default 50, max 200)
+- `offset` (default 0)
+- Response includes `total` count for UI pagination
 
 ## Section 4: Revised Agent Workflows
 
@@ -319,12 +360,24 @@ Each layer tries to resolve before escalating. The human only gets pulled in whe
 - **Display name:** "Cosmo" (not "Project Orchestrator")
 - **Avatar:** rocket emoji or custom astronaut icon
 - **Consistent presence** in inbox, chat, agent list, and notifications
+- **Update `ROLE_LABEL`** in `web/src/lib/types.ts`: change `project_orchestrator: "Project Orchestrator"` to `project_orchestrator: "Cosmo"`
+- **Update `ROLE_EMOJI`**: change `project_orchestrator: "🎯"` to `project_orchestrator: "🚀"`
 
 ## Dependencies
 
-- **OpenCode** — installed on the host or available in PATH. Version >= latest stable.
+- **OpenCode** — installed on the host or available in PATH. Version >= latest stable. Install: `go install github.com/opencode-ai/opencode@latest` or download binary.
 - **Git** — available on the host for repo operations
-- **New DB migration** — `notifications` table, `working_directory` + `repo_source` columns on `projects`
+- **New DB migration** — `migrations/003_cosmo_opencode.sql` containing: `notifications` table, `working_directory` + `repo_source` columns on `projects`
+
+## Docker Considerations
+
+The current architecture runs the worker inside Docker (`swe-worker` service). For the MVP:
+
+- **OpenCode runs on the host, not in Docker.** The worker container cannot easily spawn host processes.
+- **Option A (recommended for MVP):** Run the Temporal worker on the host (not in Docker) so it can spawn OpenCode processes and access local repos. The other services (Temporal, PostgreSQL, Redis, LiteLLM) stay in Docker.
+- **Option B (future):** Mount the host filesystem into the worker container and install OpenCode in the container image. More complex but keeps everything containerized.
+
+The `swe-worker` service in `docker-compose.yml` should be commented out or made optional when running the worker on the host.
 
 ## Out of Scope
 
@@ -332,3 +385,4 @@ Each layer tries to resolve before escalating. The human only gets pulled in whe
 - PR creation on remote repos (future — agents commit locally, human pushes)
 - Sandbox/Docker isolation for OpenCode (future — MVP runs on host)
 - Multi-tenant support (single user for now)
+- `user_id` column on notifications (add when multi-tenant is implemented)
