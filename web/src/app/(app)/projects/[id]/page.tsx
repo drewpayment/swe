@@ -165,6 +165,10 @@ export default function ProjectDetailPage() {
   const [activeTab, setActiveTab] = useState<"board" | "inbox" | "chat">("board");
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
+  const [inboxReplyInput, setInboxReplyInput] = useState("");
+  const [inboxReplySending, setInboxReplySending] = useState(false);
+  const [inboxReplyError, setInboxReplyError] = useState<string | null>(null);
+  const markReadCooldownRef = useRef<number>(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const { connected, events } = useWebSocket();
 
@@ -275,9 +279,10 @@ export default function ProjectDetailPage() {
     return () => clearInterval(interval);
   }, [refreshAll]);
 
-  // Fetch notifications for inbox tab
+  // Fetch notifications for inbox tab (respects cooldown after mark-read)
   const fetchNotifications = useCallback(async () => {
     if (!projectId) return;
+    if (Date.now() < markReadCooldownRef.current) return;
     const res = await listNotifications(projectId);
     if (res.success && res.data) setNotifications(res.data);
   }, [projectId]);
@@ -292,15 +297,48 @@ export default function ProjectDetailPage() {
   }, [activeTab, fetchNotifications]);
 
   async function handleMarkRead(notifId: string) {
-    await markNotificationRead(notifId);
+    // Optimistically update local state immediately
     setNotifications((prev) =>
       prev.map((n) => (n.id === notifId ? { ...n, read: true } : n))
     );
+    // Set cooldown to prevent poll from overwriting optimistic update
+    markReadCooldownRef.current = Date.now() + 3000;
+    await markNotificationRead(notifId);
   }
 
   async function handleMarkAllRead() {
-    await markAllNotificationsRead(projectId);
+    // Optimistically update local state immediately
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    markReadCooldownRef.current = Date.now() + 3000;
+    await markAllNotificationsRead(projectId);
+  }
+
+  async function handleInboxReply() {
+    if (!inboxReplyInput.trim() || inboxReplySending) return;
+    const orchestrator = agents.find((a) => a.role === "project_orchestrator" && a.status !== "terminated" && a.status !== "complete");
+    if (!orchestrator) {
+      setInboxReplyError("No active orchestrator agent to reply to");
+      return;
+    }
+    setInboxReplySending(true);
+    setInboxReplyError(null);
+    const msg = inboxReplyInput.trim();
+    const res = await sendMessage(orchestrator.id, msg);
+    setInboxReplySending(false);
+    if (res.success) {
+      setChatMessages((prev) => [
+        ...prev,
+        {
+          from: "You \u2192 Cosmo",
+          content: msg,
+          time: new Date().toLocaleTimeString(),
+          role: "user",
+        },
+      ]);
+      setInboxReplyInput("");
+    } else {
+      setInboxReplyError(res.error || "Failed to send reply");
+    }
   }
 
   async function handleSpawnAgent(role: AgentRole, label: string) {
@@ -866,6 +904,38 @@ export default function ProjectDetailPage() {
                       );
                     })}
                   </div>
+                )}
+                {/* Reply to Cosmo input */}
+                <div className="mt-4 flex gap-2">
+                  <input
+                    type="text"
+                    value={inboxReplyInput}
+                    onChange={(e) => setInboxReplyInput(e.target.value)}
+                    placeholder="Reply to Cosmo..."
+                    className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-blue-500 focus:outline-none"
+                    disabled={!agents.some((a) => a.role === "project_orchestrator" && a.status !== "terminated" && a.status !== "complete")}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") handleInboxReply();
+                    }}
+                  />
+                  <Button
+                    size="sm"
+                    onClick={handleInboxReply}
+                    disabled={
+                      inboxReplySending ||
+                      !inboxReplyInput.trim() ||
+                      !agents.some((a) => a.role === "project_orchestrator" && a.status !== "terminated" && a.status !== "complete")
+                    }
+                  >
+                    {inboxReplySending ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Send className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
+                {inboxReplyError && (
+                  <p className="text-xs text-red-400 mt-1">{inboxReplyError}</p>
                 )}
               </CardContent>
             </Card>
