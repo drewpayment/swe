@@ -911,6 +911,10 @@ func orchestratorHeartbeat(
 
 	// --- If all work items are complete, advance project phase ---
 	if totalCount > 0 && completedCount == totalCount {
+		// Skip if project is already complete or archived — don't spam notifications
+		if projCtx.Phase == "complete" || projCtx.Phase == "archived" {
+			return
+		}
 		nextPhase := advancePhase(projCtx.Phase)
 		if nextPhase != projCtx.Phase {
 			_ = workflow.ExecuteActivity(actCtx, "UpdateProjectPhase", activities.UpdateProjectPhaseInput{
@@ -923,13 +927,9 @@ func orchestratorHeartbeat(
 				fmt.Sprintf("Phase advanced to %s", nextPhase),
 				fmt.Sprintf("All %d work items are complete. Project has moved from %s to %s.", totalCount, projCtx.Phase, nextPhase),
 			)
-		} else {
-			createNotification(
-				"status_update", "normal",
-				"All work items complete",
-				fmt.Sprintf("All %d work items have been completed.", totalCount),
-			)
 		}
+		// Don't create duplicate "all complete" notifications — the phase advance notification is sufficient.
+		// If phase can't advance further (already at "complete"), we return early above.
 		return
 	}
 
