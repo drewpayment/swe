@@ -6,6 +6,7 @@ import (
 
 	"github.com/drewpayment/swe/internal/config"
 	"github.com/drewpayment/swe/internal/db"
+	"github.com/drewpayment/swe/internal/opencode"
 	"github.com/drewpayment/swe/internal/temporal/activities"
 	"github.com/drewpayment/swe/internal/temporal/workflows"
 	"go.temporal.io/sdk/client"
@@ -34,7 +35,8 @@ func StartWorker(ctx context.Context, cfg config.Config, pool *db.Pool) error {
 	w.RegisterWorkflow(workflows.SandboxWorkflow)
 
 	// Register activities
-	act := activities.New(cfg, pool)
+	ocManager := opencode.NewManager()
+	act := activities.New(cfg, pool, ocManager)
 	w.RegisterActivity(act.LLMComplete)
 	w.RegisterActivity(act.CreateSandbox)
 	w.RegisterActivity(act.DeleteSandbox)
@@ -51,6 +53,9 @@ func StartWorker(ctx context.Context, cfg config.Config, pool *db.Pool) error {
 	w.RegisterActivity(act.ListProjectAgents)
 	w.RegisterActivity(act.ListWorkItems)
 	w.RegisterActivity(act.CreateNotification)
+	w.RegisterActivity(act.StartOpenCodeServer)
+	w.RegisterActivity(act.CreateOpenCodeSession)
+	w.RegisterActivity(act.ExecuteCodeTask)
 
 	slog.Info("starting Temporal worker", "taskQueue", cfg.Temporal.TaskQueue)
 	return w.Run(worker.InterruptCh())

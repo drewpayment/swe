@@ -11,17 +11,19 @@ import (
 	"github.com/drewpayment/swe/internal/config"
 	"github.com/drewpayment/swe/internal/core"
 	"github.com/drewpayment/swe/internal/db"
+	"github.com/drewpayment/swe/internal/opencode"
 )
 
 // Activities holds shared dependencies for all activity implementations.
 type Activities struct {
-	cfg  config.Config
-	pool *db.Pool
+	cfg      config.Config
+	pool     *db.Pool
+	opencode *opencode.Manager
 }
 
 // New creates a new Activities instance.
-func New(cfg config.Config, pool *db.Pool) *Activities {
-	return &Activities{cfg: cfg, pool: pool}
+func New(cfg config.Config, pool *db.Pool, ocManager *opencode.Manager) *Activities {
+	return &Activities{cfg: cfg, pool: pool, opencode: ocManager}
 }
 
 // CompletionRequest is the input for an LLM completion.
@@ -431,11 +433,13 @@ type GetProjectContextInput struct {
 
 // GetProjectContextOutput contains project details for agent context.
 type GetProjectContextOutput struct {
-	Name        string   `json:"name"`
-	Description string   `json:"description"`
-	Phase       string   `json:"phase"`
-	WorkItems   []string `json:"work_items"`
-	AgentCount  int      `json:"agent_count"`
+	Name             string   `json:"name"`
+	Description      string   `json:"description"`
+	Phase            string   `json:"phase"`
+	WorkItems        []string `json:"work_items"`
+	AgentCount       int      `json:"agent_count"`
+	WorkingDirectory string   `json:"working_directory"`
+	RepoSource       string   `json:"repo_source"`
 }
 
 // GetProjectContext retrieves project information for agent context building.
@@ -466,11 +470,87 @@ func (a *Activities) GetProjectContext(ctx context.Context, input GetProjectCont
 		desc = *project.Description
 	}
 
+	workDir := ""
+	if project.WorkingDirectory != nil {
+		workDir = *project.WorkingDirectory
+	}
+
 	return &GetProjectContextOutput{
-		Name:        project.Name,
-		Description: desc,
-		Phase:       string(project.Phase),
-		WorkItems:   itemSummaries,
-		AgentCount:  len(agents),
+		Name:             project.Name,
+		Description:      desc,
+		Phase:            string(project.Phase),
+		WorkItems:        itemSummaries,
+		AgentCount:       len(agents),
+		WorkingDirectory: workDir,
+		RepoSource:       project.RepoSource,
 	}, nil
+}
+
+// StartOpenCodeServerInput is the input for StartOpenCodeServer.
+type StartOpenCodeServerInput struct {
+	ProjectID        string `json:"project_id"`
+	WorkingDirectory string `json:"working_directory"`
+}
+
+// StartOpenCodeServerOutput is the output for StartOpenCodeServer.
+type StartOpenCodeServerOutput struct {
+	ServerURL string `json:"server_url"`
+	Port      int    `json:"port"`
+}
+
+// StartOpenCodeServer starts or returns an existing OpenCode server for a project.
+func (a *Activities) StartOpenCodeServer(ctx context.Context, input StartOpenCodeServerInput) (*StartOpenCodeServerOutput, error) {
+	inst, err := a.opencode.StartServer(ctx, input.ProjectID, input.WorkingDirectory)
+	if err != nil {
+		return nil, fmt.Errorf("starting opencode server: %w", err)
+	}
+	return &StartOpenCodeServerOutput{ServerURL: inst.URL, Port: inst.Port}, nil
+}
+
+// CreateOpenCodeSessionInput is the input for CreateOpenCodeSession.
+type CreateOpenCodeSessionInput struct {
+	ServerURL string `json:"server_url"`
+}
+
+// CreateOpenCodeSessionOutput is the output for CreateOpenCodeSession.
+type CreateOpenCodeSessionOutput struct {
+	SessionID string `json:"session_id"`
+}
+
+// CreateOpenCodeSession creates a new session in an OpenCode server.
+func (a *Activities) CreateOpenCodeSession(ctx context.Context, input CreateOpenCodeSessionInput) (*CreateOpenCodeSessionOutput, error) {
+	client := opencode.NewClient(input.ServerURL)
+	sessionID, err := client.CreateSession(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("creating opencode session: %w", err)
+	}
+	return &CreateOpenCodeSessionOutput{SessionID: sessionID}, nil
+}
+
+// ExecuteCodeTaskInput is the input for ExecuteCodeTask.
+type ExecuteCodeTaskInput struct {
+	ServerURL      string `json:"server_url"`
+	SessionID      string `json:"session_id"`
+	AgentRole      string `json:"agent_role"`
+	TaskPrompt     string `json:"task_prompt"`
+	ProjectContext string `json:"project_context"`
+}
+
+// ExecuteCodeTaskOutput is the output for ExecuteCodeTask.
+type ExecuteCodeTaskOutput struct {
+	Response     string   `json:"response"`
+	FilesChanged []string `json:"files_changed"`
+	Commits      []string `json:"commits"`
+	Success      bool     `json:"success"`
+	Error        string   `json:"error,omitempty"`
+}
+
+// ExecuteCodeTask sends a coding task to an OpenCode session.
+func (a *Activities) ExecuteCodeTask(ctx context.Context, input ExecuteCodeTaskInput) (*ExecuteCodeTaskOutput, error) {
+	client := opencode.NewClient(input.ServerURL)
+	response, err := client.SendMessage(ctx, input.SessionID, input.TaskPrompt)
+	if err != nil {
+		return &ExecuteCodeTaskOutput{Success: false, Error: err.Error()}, nil
+	}
+	return &ExecuteCodeTaskOutput{Response: response, Success: true}, nil
 }
