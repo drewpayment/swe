@@ -143,7 +143,7 @@ export interface ApiResponse<T> {
 // Role display helpers
 export const ROLE_EMOJI: Record<AgentRole, string> = {
   global_orchestrator: "🎯",
-  project_orchestrator: "🎯",
+  project_orchestrator: "🚀",
   architect: "📐",
   sdet: "🧪",
   coder: "💻",
@@ -155,7 +155,7 @@ export const ROLE_EMOJI: Record<AgentRole, string> = {
 
 export const ROLE_LABEL: Record<AgentRole, string> = {
   global_orchestrator: "Global Orchestrator",
-  project_orchestrator: "Project Orchestrator",
+  project_orchestrator: "Cosmo",
   architect: "Architect",
   sdet: "SDET",
   coder: "Coder",
