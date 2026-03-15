@@ -1,11 +1,16 @@
 import { cn } from "@/lib/utils";
 import type { HTMLAttributes } from "react";
 
-export function Card({ className, ...props }: HTMLAttributes<HTMLDivElement>) {
+interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  hoverable?: boolean;
+}
+
+export function Card({ className, hoverable, ...props }: CardProps) {
   return (
     <div
       className={cn(
         "rounded-xl border border-zinc-800 bg-zinc-900 p-6 shadow-sm",
+        hoverable && "hover:bg-zinc-800/50 hover:border-zinc-700 transition-colors cursor-pointer",
         className
       )}
       {...props}

@@ -8,12 +8,17 @@ const API_URL = getApiBaseUrl();
 async function fetchApi<T>(path: string, options?: RequestInit): Promise<ApiResponse<T>> {
   try {
     const res = await fetch(`${API_URL}${path}`, {
+      credentials: "include",
       headers: {
         "Content-Type": "application/json",
         ...options?.headers,
       },
       ...options,
     });
+    if (res.status === 401) {
+      window.location.href = "/login";
+      return { success: false, error: "Unauthorized" };
+    }
     return await res.json();
   } catch {
     return { success: false, error: "Failed to connect to SWE API" };
@@ -109,7 +114,7 @@ export async function updateSettings(data: Settings): Promise<ApiResponse<Settin
 // Health
 export async function checkHealth(): Promise<{ status: string; version: string } | null> {
   try {
-    const res = await fetch(`${API_URL}/health`);
+    const res = await fetch(`${API_URL}/health`, { credentials: "include" });
     if (res.ok) return await res.json();
     return null;
   } catch {

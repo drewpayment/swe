@@ -15,6 +15,7 @@ import {
 import { getUnreadCount, listNotifications, markNotificationRead } from "@/lib/api";
 import type { Notification } from "@/lib/types";
 import type { StreamEvent } from "@/lib/ws";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -25,19 +26,24 @@ const navItems = [
 interface SidebarProps {
   connected?: boolean;
   events?: StreamEvent[];
+  sidebarOpen?: boolean;
+  onClose?: () => void;
 }
 
-export function Sidebar({ connected, events }: SidebarProps) {
+export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [badgePulse, setBadgePulse] = useState(false);
   const lastEventCount = useRef(0);
   const [bellOpen, setBellOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
+  const bellButtonRef = useRef<HTMLButtonElement>(null);
+  const bellFocusIndexRef = useRef<number>(0);
 
-  // Poll unread count every 15 seconds
+  // Fetch unread count once on mount; WebSocket events keep it updated
   useEffect(() => {
     async function fetchCount() {
       const res = await getUnreadCount();
@@ -47,8 +53,6 @@ export function Sidebar({ connected, events }: SidebarProps) {
     }
 
     fetchCount();
-    const interval = setInterval(fetchCount, 15000);
-    return () => clearInterval(interval);
   }, []);
 
   // Increment count in real-time when notification_created events arrive
@@ -60,7 +64,10 @@ export function Sidebar({ connected, events }: SidebarProps) {
 
     for (const event of newEvents) {
       if (event.type === "notification_created") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setUnreadCount((prev) => prev + 1);
+        setBadgePulse(true);
+        setTimeout(() => setBadgePulse(false), 600);
       }
     }
   }, [events]);
@@ -77,9 +84,54 @@ export function Sidebar({ connected, events }: SidebarProps) {
 
   useEffect(() => {
     if (bellOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchNotifications();
+      // Focus first item after render
+      bellFocusIndexRef.current = 0;
+      setTimeout(() => {
+        if (bellRef.current) {
+          const items = bellRef.current.querySelectorAll<HTMLElement>('[role="option"]');
+          items[0]?.focus();
+        }
+      }, 50);
     }
   }, [bellOpen, fetchNotifications]);
+
+  function handleBellKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (!bellOpen) return;
+    const items = bellRef.current
+      ? Array.from(bellRef.current.querySelectorAll<HTMLElement>('[role="option"]'))
+      : [];
+    if (items.length === 0 && e.key !== "Escape") return;
+
+    switch (e.key) {
+      case "Escape":
+        e.preventDefault();
+        setBellOpen(false);
+        bellButtonRef.current?.focus();
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        bellFocusIndexRef.current = (bellFocusIndexRef.current + 1) % items.length;
+        items[bellFocusIndexRef.current]?.focus();
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        bellFocusIndexRef.current = (bellFocusIndexRef.current - 1 + items.length) % items.length;
+        items[bellFocusIndexRef.current]?.focus();
+        break;
+      case "Home":
+        e.preventDefault();
+        bellFocusIndexRef.current = 0;
+        items[0]?.focus();
+        break;
+      case "End":
+        e.preventDefault();
+        bellFocusIndexRef.current = items.length - 1;
+        items[items.length - 1]?.focus();
+        break;
+    }
+  }
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -107,7 +159,16 @@ export function Sidebar({ connected, events }: SidebarProps) {
   }
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-zinc-800 bg-zinc-950">
+    <aside
+      className={cn(
+        "flex h-screen w-64 flex-col border-r border-zinc-800 bg-zinc-950",
+        // Desktop: always visible
+        "lg:relative lg:translate-x-0 lg:flex",
+        // Mobile: fixed drawer, shown/hidden based on sidebarOpen
+        "fixed inset-y-0 left-0 z-50 transition-transform duration-200 ease-in-out",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}
+    >
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-zinc-800 px-6 py-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
@@ -122,24 +183,41 @@ export function Sidebar({ connected, events }: SidebarProps) {
       </div>
 
       {/* Notification bell */}
-      <div className="border-b border-zinc-800 px-3 py-3 relative" ref={bellRef}>
+      <div className="border-b border-zinc-800 px-3 py-3 relative" ref={bellRef} onKeyDown={handleBellKeyDown}>
         <button
+          ref={bellButtonRef}
           onClick={() => setBellOpen((prev) => !prev)}
+          aria-label="Notifications"
+          aria-expanded={bellOpen}
+          aria-haspopup="listbox"
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
         >
           <div className="relative">
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white">
+              <span
+                aria-hidden="true"
+                className={cn(
+                  "absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white transition-transform",
+                  badgePulse && "animate-bounce"
+                )}
+              >
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
           </div>
           Notifications
         </button>
+        <span aria-live="polite" aria-atomic="true" className="sr-only">
+          {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}` : ""}
+        </span>
 
         {bellOpen && (
-          <div className="absolute left-2 right-2 top-full z-50 mt-1 max-h-96 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl">
+          <div
+            role="listbox"
+            aria-label="Notifications"
+            className="fixed inset-x-4 top-16 z-50 mt-1 max-h-96 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl lg:absolute lg:inset-x-auto lg:left-2 lg:right-2 lg:top-full"
+          >
             {notificationsLoading && notifications.length === 0 ? (
               <div className="px-4 py-6 text-center text-xs text-zinc-500">
                 Loading...
@@ -153,9 +231,11 @@ export function Sidebar({ connected, events }: SidebarProps) {
                 {notifications.map((notif) => (
                   <button
                     key={notif.id}
+                    role="option"
+                    aria-selected={false}
                     onClick={() => handleNotificationClick(notif)}
                     className={cn(
-                      "flex w-full items-start gap-2.5 px-3 py-2.5 text-left hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-b-0",
+                      "flex w-full min-h-[44px] items-start gap-2.5 px-3 py-2.5 text-left hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-b-0",
                       !notif.read && "bg-blue-950/20"
                     )}
                   >
@@ -205,6 +285,8 @@ export function Sidebar({ connected, events }: SidebarProps) {
             <Link
               key={item.href}
               href={item.href}
+              aria-current={isActive ? "page" : undefined}
+              onClick={() => onClose?.()}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
@@ -233,6 +315,9 @@ export function Sidebar({ connected, events }: SidebarProps) {
             />
             {connected ? "Connected" : "Offline"}
           </span>
+        </div>
+        <div className="mt-2 flex justify-end">
+          <ThemeToggle />
         </div>
       </div>
     </aside>

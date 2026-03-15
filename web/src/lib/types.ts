@@ -1,4 +1,4 @@
-// Domain types matching the Rust core types
+// Domain types matching Go backend types
 
 export type ProjectPhase =
   | "planning"
@@ -199,6 +199,16 @@ export const PHASE_LABEL: Record<ProjectPhase, string> = {
   deploying: "Deploying",
   complete: "Complete",
   archived: "Archived",
+};
+
+export const PHASE_VARIANT: Record<ProjectPhase, "info" | "warning" | "success" | "default"> = {
+  planning: "info",
+  designing: "info",
+  building: "warning",
+  testing: "warning",
+  deploying: "warning",
+  complete: "success",
+  archived: "default",
 };
 
 export const STATUS_COLOR: Record<AgentStatus, string> = {
