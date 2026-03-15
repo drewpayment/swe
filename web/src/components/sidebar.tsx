@@ -66,7 +66,6 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
       if (event.type === "notification_created") {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setUnreadCount((prev) => prev + 1);
-        // eslint-disable-next-line react-hooks/set-state-in-effect
         setBadgePulse(true);
         setTimeout(() => setBadgePulse(false), 600);
       }
