@@ -154,7 +154,7 @@ export const AgentsSidebar = memo(function AgentsSidebar({
   return (
     <section aria-label="Agents" className="lg:col-span-3 space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
+        <h2 className="text-sm font-semibold text-zinc-600 dark:text-zinc-400 uppercase tracking-wider">
           Agents ({activeAgents.length})
         </h2>
         <div className="relative">
@@ -181,13 +181,13 @@ export const AgentsSidebar = memo(function AgentsSidebar({
               role="menu"
               aria-label="Add agent"
               onKeyDown={handleSpawnMenuKeyDown}
-              className="absolute right-0 top-8 z-10 w-40 rounded-lg border border-zinc-700 bg-zinc-900 shadow-lg py-1"
+              className="absolute right-0 top-8 z-10 w-40 rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-lg py-1"
             >
               {SPAWNABLE_ROLES.map((r) => (
                 <button
                   key={r.role}
                   role="menuitem"
-                  className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800 focus:bg-zinc-800 focus:outline-none"
+                  className="w-full text-left px-3 py-1.5 text-xs text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 focus:bg-zinc-100 dark:focus:bg-zinc-800 focus:outline-none"
                   onClick={() => handleSpawnAgent(r.role, r.label)}
                 >
                   {ROLE_EMOJI[r.role]} {r.label}
@@ -201,9 +201,9 @@ export const AgentsSidebar = memo(function AgentsSidebar({
       {activeAgents.length === 0 && staleAgents.length === 0 ? (
         <Card className="p-3">
           <div className="flex flex-col items-center py-6 text-center">
-            <Bot className="h-8 w-8 text-zinc-600 mb-2" />
-            <p className="text-xs font-medium text-zinc-400">No agents yet</p>
-            <p className="text-xs text-zinc-600 mt-1 leading-snug">
+            <Bot className="h-8 w-8 text-zinc-400 dark:text-zinc-600 mb-2" />
+            <p className="text-xs font-medium text-zinc-600 dark:text-zinc-400">No agents yet</p>
+            <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-1 leading-snug">
               The orchestrator creates agents automatically as it plans and executes work.
             </p>
           </div>
@@ -215,7 +215,7 @@ export const AgentsSidebar = memo(function AgentsSidebar({
               key={agent.id}
               href={`/projects/${projectId}/agents/${agent.id}`}
             >
-              <Card className="p-3 cursor-pointer hover:border-zinc-600 transition-colors group">
+              <Card className="p-3 cursor-pointer hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors group">
                 <div className="flex items-center gap-3">
                   <div className="relative">
                     <span className="text-lg" aria-hidden="true">
@@ -223,11 +223,11 @@ export const AgentsSidebar = memo(function AgentsSidebar({
                     </span>
                     <span
                       aria-hidden="true"
-                      className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-zinc-900 ${statusIndicator(agent.status)}`}
+                      className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-white dark:border-zinc-900 ${statusIndicator(agent.status)}`}
                     />
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-white truncate">
+                    <p className="text-sm font-medium text-zinc-900 dark:text-white truncate">
                       {ROLE_LABEL[agent.role] ?? agent.role}
                     </p>
                     <p className="text-xs text-zinc-500 capitalize">
@@ -241,7 +241,7 @@ export const AgentsSidebar = memo(function AgentsSidebar({
                 {/* Show current work item if assigned */}
                 {agent.current_work_item_id && (
                   <div className="mt-2 pl-8">
-                    <p className="text-xs text-zinc-600 truncate">
+                    <p className="text-xs text-zinc-400 dark:text-zinc-600 truncate">
                       Working on:{" "}
                       {workItems.find(
                         (w) => w.id === agent.current_work_item_id
@@ -254,15 +254,15 @@ export const AgentsSidebar = memo(function AgentsSidebar({
           ))}
 
           {staleAgents.length > 0 && (
-            <div className="pt-2 border-t border-zinc-800">
+            <div className="pt-2 border-t border-zinc-200 dark:border-zinc-800">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-xs text-zinc-600">
+                <span className="text-xs text-zinc-400 dark:text-zinc-600">
                   {staleAgents.length} inactive
                 </span>
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="min-h-[44px] min-w-[44px] px-1.5 text-xs text-zinc-600 hover:text-zinc-400"
+                  className="min-h-[44px] min-w-[44px] px-1.5 text-xs text-zinc-400 dark:text-zinc-600 hover:text-zinc-600 dark:hover:text-zinc-400"
                   onClick={handleCleanup}
                   disabled={cleaning}
                   aria-label="Clean up inactive agents"
@@ -284,7 +284,7 @@ export const AgentsSidebar = memo(function AgentsSidebar({
                     {ROLE_LABEL[agent.role] ?? agent.role}
                   </span>
                   <button
-                    className="min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors"
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-400 dark:text-zinc-600 hover:text-red-600 dark:hover:text-red-400 transition-colors"
                     onClick={() => handleDeleteAgent(agent.id)}
                     aria-label={`Delete agent ${ROLE_LABEL[agent.role] ?? agent.role}`}
                   >

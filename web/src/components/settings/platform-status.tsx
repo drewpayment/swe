@@ -36,7 +36,7 @@ export function PlatformStatusSection() {
             const status = serviceStatuses[service];
             return (
               <div key={service} className="flex items-center justify-between">
-                <span className="text-sm text-zinc-300">{service}</span>
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">{service}</span>
                 <Badge variant={status === "healthy" ? "success" : status === "unhealthy" ? "error" : "default"}>
                   {status ?? "unknown"}
                 </Badge>

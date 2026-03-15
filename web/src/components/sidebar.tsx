@@ -161,7 +161,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
   return (
     <aside
       className={cn(
-        "flex h-screen w-64 flex-col border-r border-zinc-800 bg-zinc-950",
+        "flex h-screen w-64 flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950",
         // Desktop: always visible
         "lg:relative lg:translate-x-0 lg:flex",
         // Mobile: fixed drawer, shown/hidden based on sidebarOpen
@@ -170,12 +170,12 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 border-b border-zinc-800 px-6 py-5">
+      <div className="flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-800 px-6 py-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
           <Bot className="h-5 w-5 text-white" />
         </div>
         <div>
-          <h1 className="text-lg font-bold text-white">SWE</h1>
+          <h1 className="text-lg font-bold text-zinc-900 dark:text-white">SWE</h1>
           <p className="text-[10px] text-zinc-500 uppercase tracking-wider">
             Agentic Platform
           </p>
@@ -183,14 +183,14 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
       </div>
 
       {/* Notification bell */}
-      <div className="border-b border-zinc-800 px-3 py-3 relative" ref={bellRef} onKeyDown={handleBellKeyDown}>
+      <div className="border-b border-zinc-200 dark:border-zinc-800 px-3 py-3 relative" ref={bellRef} onKeyDown={handleBellKeyDown}>
         <button
           ref={bellButtonRef}
           onClick={() => setBellOpen((prev) => !prev)}
           aria-label="Notifications"
           aria-expanded={bellOpen}
           aria-haspopup="listbox"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white transition-colors"
         >
           <div className="relative">
             <Bell className="h-4 w-4" />
@@ -216,7 +216,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
           <div
             role="listbox"
             aria-label="Notifications"
-            className="fixed inset-x-4 top-16 z-50 mt-1 max-h-96 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl lg:absolute lg:inset-x-auto lg:left-2 lg:right-2 lg:top-full"
+            className="fixed inset-x-4 top-16 z-50 mt-1 max-h-96 overflow-y-auto rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xl lg:absolute lg:inset-x-auto lg:left-2 lg:right-2 lg:top-full"
           >
             {notificationsLoading && notifications.length === 0 ? (
               <div className="px-4 py-6 text-center text-xs text-zinc-500">
@@ -235,8 +235,8 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
                     aria-selected={false}
                     onClick={() => handleNotificationClick(notif)}
                     className={cn(
-                      "flex w-full min-h-[44px] items-start gap-2.5 px-3 py-2.5 text-left hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-b-0",
-                      !notif.read && "bg-blue-950/20"
+                      "flex w-full min-h-[44px] items-start gap-2.5 px-3 py-2.5 text-left hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors border-b border-zinc-200 dark:border-zinc-800 last:border-b-0",
+                      !notif.read && "bg-blue-100/20 dark:bg-blue-950/20"
                     )}
                   >
                     <span className="flex-shrink-0 text-sm mt-0.5">{"\uD83D\uDE80"}</span>
@@ -244,7 +244,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
                       <p
                         className={cn(
                           "text-xs leading-snug truncate",
-                          notif.read ? "text-zinc-400" : "text-zinc-200 font-medium"
+                          notif.read ? "text-zinc-600 dark:text-zinc-400" : "text-zinc-800 dark:text-zinc-200 font-medium"
                         )}
                       >
                         {notif.title}
@@ -254,7 +254,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
                           {notif.body}
                         </p>
                       )}
-                      <span className="text-[10px] text-zinc-600 mt-0.5 block">
+                      <span className="text-[10px] text-zinc-400 dark:text-zinc-600 mt-0.5 block">
                         {new Date(notif.created_at).toLocaleString()}
                       </span>
                     </div>
@@ -266,7 +266,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
                 <Link
                   href="/projects"
                   onClick={() => setBellOpen(false)}
-                  className="block px-3 py-2 text-center text-xs text-blue-400 hover:bg-zinc-800 transition-colors border-t border-zinc-700"
+                  className="block px-3 py-2 text-center text-xs text-blue-400 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors border-t border-zinc-300 dark:border-zinc-700"
                 >
                   View all
                 </Link>
@@ -290,8 +290,8 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive
-                  ? "bg-zinc-800 text-white"
-                  : "text-zinc-400 hover:bg-zinc-900 hover:text-white"
+                  ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white"
+                  : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white"
               )}
             >
               <item.icon className="h-4 w-4" />
@@ -302,7 +302,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
       </nav>
 
       {/* Status footer */}
-      <div className="border-t border-zinc-800 px-4 py-3">
+      <div className="border-t border-zinc-200 dark:border-zinc-800 px-4 py-3">
         <div className="flex items-center gap-2 text-xs text-zinc-500">
           <Activity className="h-3 w-3" />
           <span>v0.1.0</span>

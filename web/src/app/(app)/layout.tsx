@@ -16,7 +16,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         onClick={() => setSidebarOpen(true)}
         aria-label="Open navigation menu"
         aria-expanded={sidebarOpen}
-        className="lg:hidden fixed top-4 left-4 z-40 flex items-center justify-center h-9 w-9 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors"
+        className="lg:hidden fixed top-4 left-4 z-40 flex items-center justify-center h-9 w-9 rounded-lg bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition-colors"
       >
         <Menu className="h-5 w-5" />
       </button>

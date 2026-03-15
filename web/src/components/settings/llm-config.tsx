@@ -65,7 +65,7 @@ export function LLMConfigSection({ settings, onUpdate }: LLMConfigSectionProps) 
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
             LiteLLM Proxy URL
           </label>
           <Input
@@ -77,13 +77,13 @@ export function LLMConfigSection({ settings, onUpdate }: LLMConfigSectionProps) 
             aria-invalid={proxyUrlError ? true : undefined}
           />
           {proxyUrlError && (
-            <p id="proxy-url-error" className="mt-1 text-sm text-red-400">
+            <p id="proxy-url-error" className="mt-1 text-sm text-red-600 dark:text-red-400">
               {proxyUrlError}
             </p>
           )}
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
             Default Model
           </label>
           <Select
@@ -96,13 +96,13 @@ export function LLMConfigSection({ settings, onUpdate }: LLMConfigSectionProps) 
           </Select>
         </div>
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-2">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
             Model Overrides per Role
           </label>
           <div className="space-y-2">
             {roles.map((r) => (
               <div key={r.key} className="flex items-center gap-3">
-                <span className="text-sm text-zinc-400 w-32">{r.label}</span>
+                <span className="text-sm text-zinc-600 dark:text-zinc-400 w-32">{r.label}</span>
                 <Select
                   value={settings.llm.role_models[r.key] || ""}
                   onChange={(e) => updateRoleModel(r.key, e.target.value)}

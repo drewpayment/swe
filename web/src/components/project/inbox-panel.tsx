@@ -74,7 +74,7 @@ export const InboxPanel = memo(function InboxPanel({
           </div>
         ) : notifications.length === 0 ? (
           <div className="text-center py-8">
-            <Inbox className="h-8 w-8 text-zinc-700 mx-auto mb-2" />
+            <Inbox className="h-8 w-8 text-zinc-400 dark:text-zinc-700 mx-auto mb-2" />
             <p className="text-sm text-zinc-500">
               No notifications yet. Cosmo will keep you posted!
             </p>
@@ -91,12 +91,12 @@ export const InboxPanel = memo(function InboxPanel({
                   onClick={() => !notif.read && onMarkRead(notif.id)}
                   className={`flex items-start gap-3 rounded-lg border px-4 py-3 transition-colors cursor-pointer ${
                     notif.read
-                      ? "border-zinc-800 hover:border-zinc-700"
-                      : "border-l-blue-500 border-l-2 border-zinc-800 bg-blue-950/20 hover:bg-blue-950/30"
+                      ? "border-zinc-200 dark:border-zinc-800 hover:border-zinc-300 dark:hover:border-zinc-700"
+                      : "border-l-blue-500 border-l-2 border-zinc-200 dark:border-zinc-800 bg-blue-100/20 dark:bg-blue-950/20 hover:bg-blue-100/30 dark:hover:bg-blue-950/30"
                   }`}
                 >
                   <div className="flex-shrink-0 mt-0.5">
-                    <div className="h-7 w-7 rounded-full bg-zinc-800 flex items-center justify-center text-sm">
+                    <div className="h-7 w-7 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center text-sm">
                       {agent
                         ? ROLE_EMOJI[agent.role] ?? "\uD83E\uDD16"
                         : "\uD83D\uDE80"}
@@ -106,8 +106,8 @@ export const InboxPanel = memo(function InboxPanel({
                     <p
                       className={`text-sm leading-snug ${
                         notif.read
-                          ? "text-zinc-400"
-                          : "text-zinc-200 font-medium"
+                          ? "text-zinc-600 dark:text-zinc-400"
+                          : "text-zinc-800 dark:text-zinc-200 font-medium"
                       }`}
                     >
                       {notif.title}
@@ -117,7 +117,7 @@ export const InboxPanel = memo(function InboxPanel({
                         {notif.body}
                       </p>
                     )}
-                    <span className="text-[10px] text-zinc-600 mt-1 block">
+                    <span className="text-[10px] text-zinc-400 dark:text-zinc-600 mt-1 block">
                       {new Date(notif.created_at).toLocaleString()}
                     </span>
                   </div>
@@ -139,7 +139,7 @@ export const InboxPanel = memo(function InboxPanel({
             onChange={(e) => onReplyInputChange(e.target.value)}
             placeholder="Reply to Cosmo..."
             aria-label="Reply to Cosmo"
-            className="flex-1 px-4 py-2 placeholder:text-zinc-600"
+            className="flex-1 px-4 py-2 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
             disabled={!hasActiveOrchestrator}
             onKeyDown={(e) => {
               if (e.key === "Enter") onReply();
@@ -163,7 +163,7 @@ export const InboxPanel = memo(function InboxPanel({
           </Button>
         </div>
         {replyState.error && (
-          <p className="text-xs text-red-400 mt-1">{replyState.error}</p>
+          <p className="text-xs text-red-600 dark:text-red-400 mt-1">{replyState.error}</p>
         )}
       </CardContent>
     </Card>

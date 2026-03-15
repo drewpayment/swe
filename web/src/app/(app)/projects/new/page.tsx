@@ -67,13 +67,13 @@ export default function NewProjectPage() {
       <div>
         <Link
           href="/projects"
-          className="flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-300 mb-3"
+          className="flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 mb-3"
         >
           <ArrowLeft className="h-3 w-3" />
           Back to projects
         </Link>
-        <h1 className="text-2xl font-bold text-white">New Project</h1>
-        <p className="text-sm text-zinc-400 mt-1">
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">New Project</h1>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
           Create a new engineering project
         </p>
       </div>
@@ -85,7 +85,7 @@ export default function NewProjectPage() {
           </CardHeader>
           <CardContent className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Name <span className="text-red-400">*</span>
               </label>
               <Input
@@ -101,14 +101,14 @@ export default function NewProjectPage() {
                 required
               />
               {nameError && (
-                <p id="name-error" className="mt-1 text-sm text-red-400">
+                <p id="name-error" className="mt-1 text-sm text-red-600 dark:text-red-400">
                   {nameError}
                 </p>
               )}
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Description
               </label>
               <Textarea
@@ -121,7 +121,7 @@ export default function NewProjectPage() {
 
             {/* Repo source selector */}
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-2">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-2">
                 Code Source
               </label>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
@@ -132,8 +132,8 @@ export default function NewProjectPage() {
                     onClick={() => setRepoSource(opt.value)}
                     className={`flex flex-col items-center gap-1.5 rounded-lg border px-3 py-3 text-xs font-medium transition-colors ${
                       repoSource === opt.value
-                        ? "border-blue-500 bg-blue-500/10 text-blue-400"
-                        : "border-zinc-800 bg-zinc-900 text-zinc-400 hover:border-zinc-700 hover:text-zinc-300"
+                        ? "border-blue-500 bg-blue-500/10 text-blue-600 dark:text-blue-400"
+                        : "border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 text-zinc-600 dark:text-zinc-400 hover:border-zinc-300 dark:hover:border-zinc-700 hover:text-zinc-700 dark:hover:text-zinc-300"
                     }`}
                   >
                     <opt.icon className="h-4 w-4" />
@@ -145,7 +145,7 @@ export default function NewProjectPage() {
 
             {repoSource === "remote" && (
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Repository URL
                 </label>
                 <Input
@@ -159,7 +159,7 @@ export default function NewProjectPage() {
 
             {repoSource === "local" && (
               <div>
-                <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+                <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                   Local Directory Path
                 </label>
                 <Input
@@ -172,7 +172,7 @@ export default function NewProjectPage() {
             )}
 
             <div>
-              <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+              <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
                 Initial Prompt
               </label>
               <Textarea
@@ -184,7 +184,7 @@ export default function NewProjectPage() {
             </div>
 
             {error && (
-              <p className="text-sm text-red-400">{error}</p>
+              <p className="text-sm text-red-600 dark:text-red-400">{error}</p>
             )}
 
             <div className="flex justify-end gap-3 pt-2">

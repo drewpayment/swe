@@ -58,7 +58,7 @@ export default function SettingsPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
         <AlertCircle className="h-10 w-10 text-yellow-400" />
-        <p className="text-sm text-zinc-400">{error || "Failed to load settings"}</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{error || "Failed to load settings"}</p>
       </div>
     );
   }
@@ -66,8 +66,8 @@ export default function SettingsPage() {
   return (
     <div className="space-y-8 max-w-3xl">
       <div>
-        <h1 className="text-2xl font-bold text-white">Settings</h1>
-        <p className="text-sm text-zinc-400 mt-1">
+        <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Settings</h1>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
           Configure your SWE platform
         </p>
       </div>
@@ -81,7 +81,7 @@ export default function SettingsPage() {
       {/* Save */}
       <div className="flex items-center justify-end gap-3">
         {saveResult && (
-          <span className={`text-sm ${saveResult.ok ? "text-green-400" : "text-red-400"}`}>
+          <span className={`text-sm ${saveResult.ok ? "text-green-600 dark:text-green-400" : "text-red-600 dark:text-red-400"}`}>
             {saveResult.ok && <Check className="inline h-3 w-3 mr-1" />}
             {saveResult.message}
           </span>

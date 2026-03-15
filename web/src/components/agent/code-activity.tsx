@@ -71,36 +71,36 @@ export function CodeActivity({ messages, agentStatus, currentWorkItem }: CodeAct
     <div className="space-y-4">
       {/* OpenCode Session Status */}
       <div className="flex items-center gap-2 text-sm">
-        <span className="font-medium text-zinc-400">OpenCode Session:</span>
+        <span className="font-medium text-zinc-600 dark:text-zinc-400">OpenCode Session:</span>
         {agentStatus === "active" ? (
           <span className="text-green-400">&#x1F7E2; Session Active</span>
         ) : agentStatus === "idle" ? (
-          <span className="text-zinc-400">&#x26AA; Session Idle</span>
+          <span className="text-zinc-600 dark:text-zinc-400">&#x26AA; Session Idle</span>
         ) : (
-          <span className="text-zinc-600">&#x26AB; No Session</span>
+          <span className="text-zinc-400 dark:text-zinc-600">&#x26AB; No Session</span>
         )}
       </div>
 
       {/* Summary stats */}
       <div className="grid grid-cols-3 gap-3">
-        <div className="rounded-lg border border-zinc-800 px-3 py-2">
+        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2">
           <div className="flex items-center gap-2">
             <FileCode className="h-4 w-4 text-blue-400" />
-            <span className="text-lg font-bold text-white">{files.size}</span>
+            <span className="text-lg font-bold text-zinc-900 dark:text-white">{files.size}</span>
           </div>
           <p className="text-xs text-zinc-500 mt-0.5">Files Touched</p>
         </div>
-        <div className="rounded-lg border border-zinc-800 px-3 py-2">
+        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2">
           <div className="flex items-center gap-2">
             <GitCommit className="h-4 w-4 text-green-400" />
-            <span className="text-lg font-bold text-white">{commits.size}</span>
+            <span className="text-lg font-bold text-zinc-900 dark:text-white">{commits.size}</span>
           </div>
           <p className="text-xs text-zinc-500 mt-0.5">Commits Made</p>
         </div>
-        <div className="rounded-lg border border-zinc-800 px-3 py-2">
+        <div className="rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2">
           <div className="flex items-center gap-2">
             <Zap className="h-4 w-4 text-yellow-400" />
-            <span className="text-lg font-bold text-white truncate text-sm">
+            <span className="text-lg font-bold text-zinc-900 dark:text-white truncate text-sm">
               {currentWorkItem ? currentWorkItem.title : "None"}
             </span>
           </div>
@@ -118,8 +118,8 @@ export function CodeActivity({ messages, agentStatus, currentWorkItem }: CodeAct
               ) : (
                 <GitCommit className="h-3 w-3 text-green-400 shrink-0" />
               )}
-              <span className="font-mono text-zinc-300 truncate">{action.value}</span>
-              <span className="text-zinc-600 ml-auto shrink-0">
+              <span className="font-mono text-zinc-700 dark:text-zinc-300 truncate">{action.value}</span>
+              <span className="text-zinc-400 dark:text-zinc-600 ml-auto shrink-0">
                 {new Date(action.timestamp).toLocaleTimeString()}
               </span>
             </div>

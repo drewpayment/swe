@@ -279,12 +279,12 @@ export default function ProjectDetailPage() {
       <div className="space-y-6">
         <div className="flex items-center justify-between">
           <div className="space-y-2">
-            <div className="h-7 w-48 rounded-lg bg-zinc-800 animate-pulse" />
-            <div className="h-4 w-64 rounded-lg bg-zinc-800 animate-pulse" />
+            <div className="h-7 w-48 rounded-lg bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+            <div className="h-4 w-64 rounded-lg bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
           </div>
           <div className="flex items-center gap-3">
-            <div className="h-7 w-20 rounded-full bg-zinc-800 animate-pulse" />
-            <div className="h-7 w-28 rounded-full bg-zinc-800 animate-pulse" />
+            <div className="h-7 w-20 rounded-full bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
+            <div className="h-7 w-28 rounded-full bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
           </div>
         </div>
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -294,14 +294,14 @@ export default function ProjectDetailPage() {
             ))}
           </div>
           <div className="lg:col-span-9 space-y-4">
-            <div className="flex gap-1 border-b border-zinc-800 pb-0">
+            <div className="flex gap-1 border-b border-zinc-200 dark:border-zinc-800 pb-0">
               {Array.from({ length: 3 }).map((_, i) => (
-                <div key={i} className="h-9 w-16 rounded-t bg-zinc-800 animate-pulse" />
+                <div key={i} className="h-9 w-16 rounded-t bg-zinc-200 dark:bg-zinc-800 animate-pulse" />
               ))}
             </div>
             <div className="grid grid-cols-3 gap-4 pt-2">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 h-24 animate-pulse" />
+                <div key={i} className="rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-4 h-24 animate-pulse" />
               ))}
             </div>
           </div>
@@ -314,7 +314,7 @@ export default function ProjectDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
         <AlertCircle className="h-10 w-10 text-red-400" />
-        <p className="text-sm text-zinc-400">{error || "Project not found"}</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{error || "Project not found"}</p>
         <Link href="/projects" className="text-sm text-blue-400 hover:underline">
           Back to projects
         </Link>
@@ -328,13 +328,13 @@ export default function ProjectDetailPage() {
       <section aria-label="Project overview">
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <h1 className="text-2xl font-bold text-white">{project.name}</h1>
-          <p className="text-sm text-zinc-400 mt-1">
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">{project.name}</h1>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
             {project.description || "No description"}
           </p>
           {totalCount > 0 && (
             <div className="flex items-center gap-3 mt-2">
-              <div className="flex-1 max-w-xs h-1.5 bg-zinc-800 rounded-full overflow-hidden">
+              <div className="flex-1 max-w-xs h-1.5 bg-zinc-200 dark:bg-zinc-800 rounded-full overflow-hidden">
                 <div
                   className="h-full bg-green-500 rounded-full transition-all duration-500"
                   style={{ width: `${progressPct}%` }}
@@ -354,11 +354,11 @@ export default function ProjectDetailPage() {
             Phase: {PHASE_LABEL[project.phase as ProjectPhase] ?? project.phase}
           </Badge>
           {project.repo_source === "remote" && project.repo_url ? (
-            <Badge variant="default" className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-300 border-zinc-700">
+            <Badge variant="default" className="text-xs px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700">
               <ExternalLink className="h-3 w-3 mr-1 inline-block" aria-hidden="true" /> {project.repo_url}
             </Badge>
           ) : project.repo_source === "local" && project.working_directory ? (
-            <Badge variant="default" className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-300 border-zinc-700">
+            <Badge variant="default" className="text-xs px-2 py-0.5 bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 border-zinc-300 dark:border-zinc-700">
               <Folder className="h-3 w-3 mr-1 inline-block" aria-hidden="true" /> {project.working_directory}
             </Badge>
           ) : (
@@ -387,7 +387,7 @@ export default function ProjectDetailPage() {
         {/* Main Content */}
         <section aria-label="Project content" className="lg:col-span-9 space-y-6">
           {/* Tab Switcher */}
-          <div role="tablist" className="flex gap-1 border-b border-zinc-800 pb-0">
+          <div role="tablist" className="flex gap-1 border-b border-zinc-200 dark:border-zinc-800 pb-0">
             {(["board", "inbox", "chat"] as const).map((tab) => (
               <button
                 key={tab}
@@ -398,8 +398,8 @@ export default function ProjectDetailPage() {
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab
-                    ? "border-blue-500 text-white"
-                    : "border-transparent text-zinc-500 hover:text-zinc-300"
+                    ? "border-blue-500 text-zinc-900 dark:text-white"
+                    : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
                 }`}
               >
                 {tab === "board" && "Board"}

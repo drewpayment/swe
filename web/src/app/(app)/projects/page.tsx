@@ -48,8 +48,8 @@ export default function ProjectsPage() {
     <div className="space-y-6">
       <div className="flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-white">Projects</h1>
-          <p className="text-sm text-zinc-400 mt-1">
+          <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">Projects</h1>
+          <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-1">
             Manage your engineering projects
           </p>
         </div>
@@ -62,10 +62,10 @@ export default function ProjectsPage() {
       </div>
 
       {error && (
-        <Card className="border-yellow-800/50 bg-yellow-950/20">
+        <Card className="border-yellow-400/50 dark:border-yellow-800/50 bg-yellow-100/20 dark:bg-yellow-950/20">
           <CardContent className="flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-yellow-400" />
-            <p className="text-sm text-yellow-300">{error}</p>
+            <AlertCircle className="h-5 w-5 text-yellow-600 dark:text-yellow-400" />
+            <p className="text-sm text-yellow-700 dark:text-yellow-300">{error}</p>
           </CardContent>
         </Card>
       )}
@@ -74,8 +74,8 @@ export default function ProjectsPage() {
         {projects.length === 0 && !error ? (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <FolderKanban className="h-12 w-12 text-zinc-600 mb-4" />
-              <p className="text-lg text-zinc-400">No projects yet</p>
+              <FolderKanban className="h-12 w-12 text-zinc-400 dark:text-zinc-600 mb-4" />
+              <p className="text-lg text-zinc-600 dark:text-zinc-400">No projects yet</p>
               <p className="text-sm text-zinc-500 mt-1">
                 Create your first project to get started
               </p>
@@ -84,16 +84,16 @@ export default function ProjectsPage() {
         ) : (
           projects.map((project) => (
             <Link key={project.id} href={`/projects/${project.id}`}>
-              <Card className="cursor-pointer hover:border-zinc-700 transition-colors">
+              <Card className="cursor-pointer hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors">
                 <CardContent>
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4">
-                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-800 mt-0.5">
-                        <FolderKanban className="h-6 w-6 text-zinc-400" />
+                      <div className="flex h-12 w-12 items-center justify-center rounded-lg bg-zinc-100 dark:bg-zinc-800 mt-0.5">
+                        <FolderKanban className="h-6 w-6 text-zinc-600 dark:text-zinc-400" />
                       </div>
                       <div>
-                        <h3 className="font-semibold text-white text-lg">{project.name}</h3>
-                        <p className="text-sm text-zinc-400 mt-0.5">
+                        <h3 className="font-semibold text-zinc-900 dark:text-white text-lg">{project.name}</h3>
+                        <p className="text-sm text-zinc-600 dark:text-zinc-400 mt-0.5">
                           {project.description || "No description"}
                         </p>
                         <p className="text-xs text-zinc-500 mt-2">

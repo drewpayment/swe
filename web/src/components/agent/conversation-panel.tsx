@@ -32,13 +32,13 @@ export function ConversationPanel({
         ) : (
           messages.map((msg) => (
             <div key={msg.id} className={`flex flex-col gap-0.5 ${msg.role === "user" ? "items-end" : "items-start"}`}>
-              <span className="text-[10px] text-zinc-600">
+              <span className="text-[10px] text-zinc-400 dark:text-zinc-600">
                 {msg.role === "user" ? "You" : agentName} · {new Date(msg.created_at).toLocaleTimeString()}
               </span>
               <div className={`rounded-lg px-3 py-2 text-sm max-w-[80%] ${
                 msg.role === "user"
-                  ? "bg-blue-600/20 text-blue-100"
-                  : "bg-zinc-800 text-zinc-300"
+                  ? "bg-blue-100/20 dark:bg-blue-600/20 text-blue-800 dark:text-blue-100"
+                  : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
               }`}>
                 {msg.content}
               </div>

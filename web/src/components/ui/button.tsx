@@ -7,8 +7,8 @@ type ButtonSize = "sm" | "md" | "lg";
 
 const variantStyles: Record<ButtonVariant, string> = {
   primary: "bg-blue-600 text-white hover:bg-blue-700",
-  secondary: "bg-zinc-800 text-zinc-300 hover:bg-zinc-700 border border-zinc-700",
-  ghost: "text-zinc-400 hover:text-white hover:bg-zinc-800",
+  secondary: "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-200 dark:hover:bg-zinc-700 border border-zinc-300 dark:border-zinc-700",
+  ghost: "text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800",
   danger: "bg-red-600 text-white hover:bg-red-700",
 };
 

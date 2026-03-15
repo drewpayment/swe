@@ -25,7 +25,7 @@ export function K8sConfigSection({ settings, onUpdate }: K8sConfigSectionProps) 
       </CardHeader>
       <CardContent className="space-y-4">
         <div>
-          <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+          <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
             Sandbox Namespace
           </label>
           <Input
@@ -36,7 +36,7 @@ export function K8sConfigSection({ settings, onUpdate }: K8sConfigSectionProps) 
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
               Default CPU Limit
             </label>
             <Input
@@ -46,7 +46,7 @@ export function K8sConfigSection({ settings, onUpdate }: K8sConfigSectionProps) 
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-zinc-300 mb-1.5">
+            <label className="block text-sm font-medium text-zinc-700 dark:text-zinc-300 mb-1.5">
               Default Memory Limit
             </label>
             <Input

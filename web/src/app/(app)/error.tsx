@@ -11,14 +11,14 @@ interface ErrorProps {
 
 export default function AppError({ error, reset }: ErrorProps) {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-950">
+    <div className="flex min-h-screen items-center justify-center bg-zinc-50 dark:bg-zinc-950">
       <div className="flex max-w-md flex-col items-center gap-6 text-center">
         <AlertCircle className="h-12 w-12 text-red-500" />
         <div className="flex flex-col gap-2">
-          <h1 className="text-xl font-semibold text-zinc-100">
+          <h1 className="text-xl font-semibold text-zinc-900 dark:text-zinc-100">
             Something went wrong
           </h1>
-          <p className="text-sm text-zinc-400">
+          <p className="text-sm text-zinc-600 dark:text-zinc-400">
             {error.message || "An unexpected error occurred. Please try again."}
           </p>
         </div>
@@ -28,7 +28,7 @@ export default function AppError({ error, reset }: ErrorProps) {
           </Button>
           <Link
             href="/dashboard"
-            className="inline-flex items-center justify-center rounded-lg border border-zinc-700 bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-300 transition-colors hover:bg-zinc-700"
+            className="inline-flex items-center justify-center rounded-lg border border-zinc-300 dark:border-zinc-700 bg-zinc-100 dark:bg-zinc-800 px-4 py-2 text-sm font-medium text-zinc-700 dark:text-zinc-300 transition-colors hover:bg-zinc-200 dark:hover:bg-zinc-700"
           >
             Go to dashboard
           </Link>

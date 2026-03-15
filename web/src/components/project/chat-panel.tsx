@@ -53,7 +53,7 @@ export const ChatPanel = memo(function ChatPanel({
             <select
               value={targetAgentId}
               onChange={(e) => onTargetChange(e.target.value)}
-              className="rounded-lg border border-zinc-800 bg-zinc-900 px-2 py-1 text-xs text-white focus:border-blue-500 focus:outline-none"
+              className="rounded-lg border border-zinc-200 dark:border-zinc-800 bg-zinc-50 dark:bg-zinc-900 px-2 py-1 text-xs text-zinc-900 dark:text-white focus:border-blue-500 focus:outline-none"
             >
               {activeAgents.map((a) => (
                 <option key={a.id} value={a.id}>
@@ -68,7 +68,7 @@ export const ChatPanel = memo(function ChatPanel({
         <div className="space-y-3 mb-4 max-h-80 overflow-y-auto">
           {messages.length === 0 ? (
             <div className="text-center py-6">
-              <Bot className="h-8 w-8 text-zinc-700 mx-auto mb-2" />
+              <Bot className="h-8 w-8 text-zinc-400 dark:text-zinc-700 mx-auto mb-2" />
               <p className="text-sm text-zinc-500">
                 {activeAgents.length === 0
                   ? "No active agents — the orchestrator will start working shortly"
@@ -83,33 +83,33 @@ export const ChatPanel = memo(function ChatPanel({
               >
                 {msg.role !== "user" && (
                   <div className="flex-shrink-0 mt-0.5">
-                    <div className="h-6 w-6 rounded-full bg-zinc-800 flex items-center justify-center">
-                      <Bot className="h-3.5 w-3.5 text-zinc-400" />
+                    <div className="h-6 w-6 rounded-full bg-zinc-100 dark:bg-zinc-800 flex items-center justify-center">
+                      <Bot className="h-3.5 w-3.5 text-zinc-600 dark:text-zinc-400" />
                     </div>
                   </div>
                 )}
                 <div
                   className={`max-w-[80%] rounded-lg px-3 py-2 ${
                     msg.role === "user"
-                      ? "bg-blue-600/20 border border-blue-800/50"
-                      : "bg-zinc-800/50 border border-zinc-800"
+                      ? "bg-blue-100/20 dark:bg-blue-600/20 border border-blue-300/50 dark:border-blue-800/50"
+                      : "bg-zinc-100/50 dark:bg-zinc-800/50 border border-zinc-200 dark:border-zinc-800"
                   }`}
                 >
                   <div className="flex items-center gap-2 mb-0.5">
-                    <span className="text-xs font-medium text-zinc-400">
+                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
                       {msg.from}
                     </span>
-                    <span className="text-[10px] text-zinc-600">
+                    <span className="text-[10px] text-zinc-400 dark:text-zinc-600">
                       {msg.time}
                     </span>
                   </div>
-                  <p className="text-sm text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300 whitespace-pre-wrap break-words leading-relaxed">
                     {msg.content}
                   </p>
                 </div>
                 {msg.role === "user" && (
                   <div className="flex-shrink-0 mt-0.5">
-                    <div className="h-6 w-6 rounded-full bg-blue-900 flex items-center justify-center">
+                    <div className="h-6 w-6 rounded-full bg-blue-100 dark:bg-blue-900 flex items-center justify-center">
                       <User className="h-3.5 w-3.5 text-blue-400" />
                     </div>
                   </div>
@@ -130,7 +130,7 @@ export const ChatPanel = memo(function ChatPanel({
                 : "Send a message to interact with agents..."
             }
             aria-label="Send message to agent"
-            className="flex-1 px-4 py-2 placeholder:text-zinc-600"
+            className="flex-1 px-4 py-2 placeholder:text-zinc-400 dark:placeholder:text-zinc-600"
             disabled={activeAgents.length === 0}
             onKeyDown={(e) => {
               if (e.key === "Enter") onSendMessage();
@@ -152,7 +152,7 @@ export const ChatPanel = memo(function ChatPanel({
           </Button>
         </div>
         {error && (
-          <p className="text-xs text-red-400 mt-1">{error}</p>
+          <p className="text-xs text-red-600 dark:text-red-400 mt-1">{error}</p>
         )}
       </CardContent>
     </Card>

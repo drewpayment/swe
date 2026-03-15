@@ -44,7 +44,7 @@ export function ThemeToggle() {
     return (
       <button
         aria-label="Toggle theme"
-        className="flex items-center justify-center h-8 w-8 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+        className="flex items-center justify-center h-8 w-8 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
         disabled
       >
         <span className="h-4 w-4" />
@@ -56,7 +56,7 @@ export function ThemeToggle() {
     <button
       onClick={toggle}
       aria-label={theme === "dark" ? "Switch to light mode" : "Switch to dark mode"}
-      className="flex items-center justify-center h-8 w-8 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 dark:hover:bg-zinc-800 transition-colors"
+      className="flex items-center justify-center h-8 w-8 rounded-lg text-zinc-600 dark:text-zinc-400 hover:text-zinc-900 dark:hover:text-white hover:bg-zinc-200 dark:hover:bg-zinc-800 transition-colors"
     >
       {theme === "dark" ? (
         <Sun className="h-4 w-4" />

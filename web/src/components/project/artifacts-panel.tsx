@@ -28,7 +28,7 @@ export const ArtifactsPanel = memo(function ArtifactsPanel({ artifacts }: Artifa
           {artifacts.map((artifact) => (
             <div
               key={artifact.id}
-              className="flex items-center justify-between rounded-lg border border-zinc-800 px-4 py-3 hover:border-zinc-700 transition-colors cursor-pointer"
+              className="flex items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 px-4 py-3 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors cursor-pointer"
             >
               <div className="flex items-center gap-3">
                 {artifact.artifact_type === "pull_request" ? (
@@ -36,7 +36,7 @@ export const ArtifactsPanel = memo(function ArtifactsPanel({ artifacts }: Artifa
                 ) : (
                   <FileText className="h-4 w-4 text-zinc-400" />
                 )}
-                <span className="text-sm text-zinc-300">
+                <span className="text-sm text-zinc-700 dark:text-zinc-300">
                   {artifact.name}
                 </span>
               </div>

@@ -111,7 +111,7 @@ export default function AgentDetailPage() {
     return (
       <div className="flex flex-col items-center justify-center h-64 gap-3">
         <AlertCircle className="h-10 w-10 text-red-400" />
-        <p className="text-sm text-zinc-400">{error || "Agent not found"}</p>
+        <p className="text-sm text-zinc-600 dark:text-zinc-400">{error || "Agent not found"}</p>
         <Link href={`/projects/${projectId}`} className="text-sm text-blue-400 hover:underline">
           Back to project
         </Link>
@@ -127,7 +127,7 @@ export default function AgentDetailPage() {
       <div>
         <Link
           href={`/projects/${projectId}`}
-          className="flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-300 mb-3"
+          className="flex items-center gap-1 text-sm text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300 mb-3"
         >
           <ArrowLeft className="h-3 w-3" />
           Back to project
@@ -135,10 +135,10 @@ export default function AgentDetailPage() {
         <div className="flex items-center gap-4">
           <span className="text-3xl">{ROLE_EMOJI[agent.role] ?? "🤖"}</span>
           <div>
-            <h1 className="text-2xl font-bold text-white">
+            <h1 className="text-2xl font-bold text-zinc-900 dark:text-white">
               {ROLE_LABEL[agent.role] ?? agent.role}
             </h1>
-            <p className="text-sm text-zinc-400">{agent.name}</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">{agent.name}</p>
           </div>
           <Badge variant={statusBadgeVariant(agent.status)} className="ml-4">
             {agent.status}
@@ -152,8 +152,8 @@ export default function AgentDetailPage() {
           <CardContent className="flex items-center gap-3">
             <Cpu className="h-5 w-5 text-blue-400" />
             <div>
-              <p className="text-lg font-bold text-white">{agent.status}</p>
-              <p className="text-xs text-zinc-400">Status</p>
+              <p className="text-lg font-bold text-zinc-900 dark:text-white">{agent.status}</p>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">Status</p>
             </div>
           </CardContent>
         </Card>
@@ -161,10 +161,10 @@ export default function AgentDetailPage() {
           <CardContent className="flex items-center gap-3">
             <Zap className="h-5 w-5 text-yellow-400" />
             <div>
-              <p className="text-lg font-bold text-white">
+              <p className="text-lg font-bold text-zinc-900 dark:text-white">
                 {agent.tokens_consumed.toLocaleString()}
               </p>
-              <p className="text-xs text-zinc-400">Tokens Used</p>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">Tokens Used</p>
             </div>
           </CardContent>
         </Card>
@@ -172,8 +172,8 @@ export default function AgentDetailPage() {
           <CardContent className="flex items-center gap-3">
             <Clock className="h-5 w-5 text-green-400" />
             <div>
-              <p className="text-lg font-bold text-white">{timeAgo(agent.created_at)}</p>
-              <p className="text-xs text-zinc-400">Started</p>
+              <p className="text-lg font-bold text-zinc-900 dark:text-white">{timeAgo(agent.created_at)}</p>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">Started</p>
             </div>
           </CardContent>
         </Card>
@@ -181,10 +181,10 @@ export default function AgentDetailPage() {
           <CardContent className="flex items-center gap-3">
             <Clock className="h-5 w-5 text-purple-400" />
             <div>
-              <p className="text-lg font-bold text-white">
+              <p className="text-lg font-bold text-zinc-900 dark:text-white">
                 {agent.last_heartbeat ? timeAgo(agent.last_heartbeat) : "N/A"}
               </p>
-              <p className="text-xs text-zinc-400">Last Heartbeat</p>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400">Last Heartbeat</p>
             </div>
           </CardContent>
         </Card>
@@ -192,20 +192,20 @@ export default function AgentDetailPage() {
 
       {/* Current Task */}
       {currentWorkItem ? (
-        <Card className="border-blue-800/50 bg-blue-950/20">
+        <Card className="border-blue-300/50 dark:border-blue-800/50 bg-blue-100/20 dark:bg-blue-950/20">
           <CardContent>
             <p className="text-xs text-blue-400 font-medium mb-1">CURRENT TASK</p>
-            <p className="text-sm text-white">{currentWorkItem.title}</p>
+            <p className="text-sm text-zinc-900 dark:text-white">{currentWorkItem.title}</p>
             {currentWorkItem.description && (
-              <p className="text-xs text-zinc-400 mt-1">{currentWorkItem.description}</p>
+              <p className="text-xs text-zinc-600 dark:text-zinc-400 mt-1">{currentWorkItem.description}</p>
             )}
           </CardContent>
         </Card>
       ) : (
-        <Card className="border-zinc-800">
+        <Card className="border-zinc-200 dark:border-zinc-800">
           <CardContent>
             <p className="text-xs text-zinc-500 font-medium mb-1">CURRENT TASK</p>
-            <p className="text-sm text-zinc-400">No active task assigned</p>
+            <p className="text-sm text-zinc-600 dark:text-zinc-400">No active task assigned</p>
           </CardContent>
         </Card>
       )}
@@ -220,10 +220,10 @@ export default function AgentDetailPage() {
             {workItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center justify-between rounded-lg border border-zinc-800 px-4 py-3"
+                className="flex items-center justify-between rounded-lg border border-zinc-200 dark:border-zinc-800 px-4 py-3"
               >
                 <div>
-                  <p className="text-sm text-zinc-300">{item.title}</p>
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300">{item.title}</p>
                   {item.description && (
                     <p className="text-xs text-zinc-500 mt-0.5">{item.description}</p>
                   )}
@@ -286,19 +286,19 @@ export default function AgentDetailPage() {
           <div className="grid grid-cols-2 gap-4 text-sm">
             <div>
               <p className="text-zinc-500">Agent ID</p>
-              <p className="text-zinc-300 font-mono text-xs">{agent.id}</p>
+              <p className="text-zinc-700 dark:text-zinc-300 font-mono text-xs">{agent.id}</p>
             </div>
             <div>
               <p className="text-zinc-500">Role</p>
-              <p className="text-zinc-300">{ROLE_LABEL[agent.role] ?? agent.role}</p>
+              <p className="text-zinc-700 dark:text-zinc-300">{ROLE_LABEL[agent.role] ?? agent.role}</p>
             </div>
             <div>
               <p className="text-zinc-500">Project ID</p>
-              <p className="text-zinc-300 font-mono text-xs">{agent.project_id || "N/A"}</p>
+              <p className="text-zinc-700 dark:text-zinc-300 font-mono text-xs">{agent.project_id || "N/A"}</p>
             </div>
             <div>
               <p className="text-zinc-500">Workflow ID</p>
-              <p className="text-zinc-300 font-mono text-xs">{agent.workflow_id || "N/A"}</p>
+              <p className="text-zinc-700 dark:text-zinc-300 font-mono text-xs">{agent.workflow_id || "N/A"}</p>
             </div>
           </div>
         </CardContent>

@@ -118,11 +118,11 @@ export const KanbanBoard = memo(function KanbanBoard({
       <CardContent>
         {workItems.length === 0 ? (
           <div className="text-center py-8">
-            <Clock className="h-8 w-8 text-zinc-700 mx-auto mb-2" />
+            <Clock className="h-8 w-8 text-zinc-400 dark:text-zinc-700 mx-auto mb-2" />
             <p className="text-sm text-zinc-500">
               Waiting for orchestrator to create work items...
             </p>
-            <p className="text-xs text-zinc-600 mt-1">
+            <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-1">
               The project orchestrator will analyze your brief and create tasks
             </p>
           </div>
@@ -133,13 +133,13 @@ export const KanbanBoard = memo(function KanbanBoard({
               return (
                 <div
                   key={col.key}
-                  className={`flex-1 md:min-w-[160px] rounded-lg border ${col.color} bg-zinc-900/50 p-2`}
+                  className={`flex-1 md:min-w-[160px] rounded-lg border ${col.color} bg-zinc-50/50 dark:bg-zinc-900/50 p-2`}
                 >
                   <div className="flex items-center justify-between mb-2 px-1">
-                    <span className="text-xs font-medium text-zinc-400">
+                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
                       {col.label}
                     </span>
-                    <span className="text-xs text-zinc-600">
+                    <span className="text-xs text-zinc-400 dark:text-zinc-600">
                       {items.length}
                     </span>
                   </div>
@@ -147,9 +147,9 @@ export const KanbanBoard = memo(function KanbanBoard({
                     {items.map((item) => (
                       <div
                         key={item.id}
-                        className="rounded-md border border-zinc-800 bg-zinc-900 p-2 min-h-[44px] hover:border-zinc-700 transition-colors"
+                        className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2 min-h-[44px] hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
                       >
-                        <p className="text-xs font-medium text-zinc-300 leading-snug">
+                        <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300 leading-snug">
                           {item.title}
                         </p>
                         <div className="flex items-center justify-between mt-1.5">
@@ -159,7 +159,7 @@ export const KanbanBoard = memo(function KanbanBoard({
                             {item.priority}
                           </span>
                           {item.assigned_agent_id && (
-                            <span className="text-[10px] text-zinc-600">
+                            <span className="text-[10px] text-zinc-400 dark:text-zinc-600">
                               {ROLE_EMOJI[agents.find((a) => a.id === item.assigned_agent_id)?.role ?? "coder"] ?? "🤖"}
                             </span>
                           )}
@@ -167,7 +167,7 @@ export const KanbanBoard = memo(function KanbanBoard({
                       </div>
                     ))}
                     {items.length === 0 && (
-                      <p className="text-[10px] text-zinc-700 text-center py-3">
+                      <p className="text-[10px] text-zinc-400 dark:text-zinc-700 text-center py-3">
                         —
                       </p>
                     )}
@@ -181,15 +181,15 @@ export const KanbanBoard = memo(function KanbanBoard({
             {workItems.map((item) => (
               <div
                 key={item.id}
-                className="flex items-center gap-3 rounded-lg border border-zinc-800 px-3 py-2 hover:border-zinc-700 transition-colors"
+                className="flex items-center gap-3 rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
               >
                 {workItemStatusIcon(item.status)}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm text-zinc-300 truncate">
+                  <p className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
                     {item.title}
                   </p>
                   {item.description && (
-                    <p className="text-xs text-zinc-600 truncate mt-0.5">
+                    <p className="text-xs text-zinc-400 dark:text-zinc-600 truncate mt-0.5">
                       {item.description}
                     </p>
                   )}
@@ -200,7 +200,7 @@ export const KanbanBoard = memo(function KanbanBoard({
                   {item.priority}
                 </span>
                 {item.assigned_agent_id && (
-                  <span className="text-xs text-zinc-600">
+                  <span className="text-xs text-zinc-400 dark:text-zinc-600">
                     {ROLE_EMOJI[agents.find((a) => a.id === item.assigned_agent_id)?.role ?? "coder"]}
                   </span>
                 )}
