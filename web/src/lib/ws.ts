@@ -10,20 +10,32 @@ export interface StreamEvent {
   [key: string]: unknown;
 }
 
+const WS_INITIAL_DELAY = 1000;
+const WS_MAX_DELAY = 30000;
+const WS_MAX_RETRIES = 20;
+
 export function useWebSocket() {
   const [connected, setConnected] = useState(false);
   const [events, setEvents] = useState<StreamEvent[]>([]);
   const wsRef = useRef<WebSocket | null>(null);
   const reconnectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const retryCountRef = useRef(0);
+  const retryDelayRef = useRef(WS_INITIAL_DELAY);
 
   useEffect(() => {
     function connect() {
+      if (retryCountRef.current >= WS_MAX_RETRIES) {
+        console.error("[WS] Max retries reached, giving up");
+        return;
+      }
+
       try {
         const ws = new WebSocket(getWsUrl());
 
         ws.onopen = () => {
           setConnected(true);
-          console.log("[WS] Connected");
+          retryCountRef.current = 0;
+          retryDelayRef.current = WS_INITIAL_DELAY;
         };
 
         ws.onmessage = (event) => {
@@ -37,8 +49,10 @@ export function useWebSocket() {
 
         ws.onclose = () => {
           setConnected(false);
-          console.log("[WS] Disconnected, reconnecting in 5s...");
-          reconnectTimeoutRef.current = setTimeout(connect, 5000);
+          retryCountRef.current += 1;
+          const delay = retryDelayRef.current;
+          retryDelayRef.current = Math.min(delay * 2, WS_MAX_DELAY);
+          reconnectTimeoutRef.current = setTimeout(connect, delay);
         };
 
         ws.onerror = () => {
@@ -48,7 +62,10 @@ export function useWebSocket() {
         wsRef.current = ws;
       } catch {
         console.error("[WS] Failed to connect");
-        reconnectTimeoutRef.current = setTimeout(connect, 5000);
+        retryCountRef.current += 1;
+        const delay = retryDelayRef.current;
+        retryDelayRef.current = Math.min(delay * 2, WS_MAX_DELAY);
+        reconnectTimeoutRef.current = setTimeout(connect, delay);
       }
     }
 

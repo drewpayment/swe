@@ -96,11 +96,6 @@ export default function AgentDetailPage() {
         content: msg,
         created_at: new Date().toISOString(),
       }]);
-      // Refresh messages after a delay to catch the agent's response
-      setTimeout(async () => {
-        const res = await listAgentChatMessages(agId);
-        if (res.success && res.data) setMessages(res.data);
-      }, 3000);
     }
   }
 

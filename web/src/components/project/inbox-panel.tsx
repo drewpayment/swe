@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,7 +25,7 @@ interface InboxPanelProps {
   onReplyInputChange: (value: string) => void;
 }
 
-export function InboxPanel({
+export const InboxPanel = memo(function InboxPanel({
   notifications,
   agents,
   loading,
@@ -167,4 +168,4 @@ export function InboxPanel({
       </CardContent>
     </Card>
   );
-}
+});

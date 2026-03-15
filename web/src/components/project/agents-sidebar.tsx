@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { memo, useEffect, useRef, useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ROLE_EMOJI, ROLE_LABEL } from "@/lib/types";
@@ -49,7 +49,7 @@ interface AgentsSidebarProps {
   onAgentDeleted: (agentId: string) => void;
 }
 
-export function AgentsSidebar({
+export const AgentsSidebar = memo(function AgentsSidebar({
   agents,
   workItems,
   projectId,
@@ -295,4 +295,4 @@ export function AgentsSidebar({
       )}
     </section>
   );
-}
+});

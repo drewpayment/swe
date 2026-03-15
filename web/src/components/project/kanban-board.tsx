@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -74,7 +75,7 @@ interface KanbanBoardProps {
   onViewModeChange: (mode: "kanban" | "list") => void;
 }
 
-export function KanbanBoard({
+export const KanbanBoard = memo(function KanbanBoard({
   workItems,
   agents,
   viewMode,
@@ -213,4 +214,4 @@ export function KanbanBoard({
       </CardContent>
     </Card>
   );
-}
+});

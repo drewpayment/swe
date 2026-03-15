@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useEffect } from "react";
+import { memo, useRef, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,7 +27,7 @@ interface ChatPanelProps {
   onChatInputChange: (value: string) => void;
 }
 
-export function ChatPanel({
+export const ChatPanel = memo(function ChatPanel({
   messages,
   activeAgents,
   targetAgentId,
@@ -157,4 +157,4 @@ export function ChatPanel({
       </CardContent>
     </Card>
   );
-}
+});

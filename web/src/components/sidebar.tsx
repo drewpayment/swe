@@ -42,7 +42,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
   const bellButtonRef = useRef<HTMLButtonElement>(null);
   const bellFocusIndexRef = useRef<number>(0);
 
-  // Poll unread count every 15 seconds
+  // Fetch unread count once on mount; WebSocket events keep it updated
   useEffect(() => {
     async function fetchCount() {
       const res = await getUnreadCount();
@@ -52,8 +52,6 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
     }
 
     fetchCount();
-    const interval = setInterval(fetchCount, 15000);
-    return () => clearInterval(interval);
   }, []);
 
   // Increment count in real-time when notification_created events arrive
@@ -65,6 +63,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
 
     for (const event of newEvents) {
       if (event.type === "notification_created") {
+        // eslint-disable-next-line react-hooks/set-state-in-effect
         setUnreadCount((prev) => prev + 1);
       }
     }
@@ -82,6 +81,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
 
   useEffect(() => {
     if (bellOpen) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       fetchNotifications();
       // Focus first item after render
       bellFocusIndexRef.current = 0;

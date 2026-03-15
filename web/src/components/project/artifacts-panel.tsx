@@ -1,5 +1,6 @@
 "use client";
 
+import { memo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import type { Artifact } from "@/lib/types";
@@ -9,7 +10,7 @@ interface ArtifactsPanelProps {
   artifacts: Artifact[];
 }
 
-export function ArtifactsPanel({ artifacts }: ArtifactsPanelProps) {
+export const ArtifactsPanel = memo(function ArtifactsPanel({ artifacts }: ArtifactsPanelProps) {
   if (artifacts.length === 0) return null;
 
   return (
@@ -56,4 +57,4 @@ export function ArtifactsPanel({ artifacts }: ArtifactsPanelProps) {
       </CardContent>
     </Card>
   );
-}
+});

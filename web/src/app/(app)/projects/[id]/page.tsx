@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, useCallback } from "react";
+import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
 import { ROLE_LABEL, PHASE_LABEL, PHASE_VARIANT } from "@/lib/types";
@@ -63,8 +63,19 @@ export default function ProjectDetailPage() {
 
   const projectId = typeof id === "string" ? id : Array.isArray(id) ? id[0] : "";
 
-  const activeAgents = agents.filter(
-    (a) => a.status !== "terminated" && a.status !== "complete"
+  const activeAgents = useMemo(
+    () => agents.filter((a) => a.status !== "terminated" && a.status !== "complete"),
+    [agents]
+  );
+
+  const completedCount = useMemo(
+    () => workItems.filter((w) => w.status === "complete").length,
+    [workItems]
+  );
+  const totalCount = workItems.length;
+  const progressPct = useMemo(
+    () => (totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0),
+    [completedCount, totalCount]
   );
 
   const refreshAll = useCallback(async () => {
@@ -279,10 +290,6 @@ export default function ProjectDetailPage() {
       </div>
     );
   }
-
-  const completedCount = workItems.filter((w) => w.status === "complete").length;
-  const totalCount = workItems.length;
-  const progressPct = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
 
   return (
     <div className="space-y-6">
