@@ -200,9 +200,12 @@ export const AgentsSidebar = memo(function AgentsSidebar({
 
       {activeAgents.length === 0 && staleAgents.length === 0 ? (
         <Card className="p-3">
-          <div className="flex flex-col items-center py-4">
+          <div className="flex flex-col items-center py-6 text-center">
             <Bot className="h-8 w-8 text-zinc-600 mb-2" />
-            <p className="text-xs text-zinc-500">No agents assigned</p>
+            <p className="text-xs font-medium text-zinc-400">No agents yet</p>
+            <p className="text-xs text-zinc-600 mt-1 leading-snug">
+              The orchestrator creates agents automatically as it plans and executes work.
+            </p>
           </div>
         </Card>
       ) : (

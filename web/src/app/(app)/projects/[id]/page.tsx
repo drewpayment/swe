@@ -15,12 +15,12 @@ import type {
 } from "@/lib/types";
 import {
   AlertCircle,
-  Loader2,
   Inbox,
   ExternalLink,
   Folder,
   AlertTriangle,
 } from "lucide-react";
+import { StatCardSkeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 import {
   getProject,
@@ -276,8 +276,36 @@ export default function ProjectDetailPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 text-zinc-400 animate-spin" />
+      <div className="space-y-6">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-7 w-48 rounded-lg bg-zinc-800 animate-pulse" />
+            <div className="h-4 w-64 rounded-lg bg-zinc-800 animate-pulse" />
+          </div>
+          <div className="flex items-center gap-3">
+            <div className="h-7 w-20 rounded-full bg-zinc-800 animate-pulse" />
+            <div className="h-7 w-28 rounded-full bg-zinc-800 animate-pulse" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          <div className="lg:col-span-3 space-y-2">
+            {Array.from({ length: 3 }).map((_, i) => (
+              <StatCardSkeleton key={i} />
+            ))}
+          </div>
+          <div className="lg:col-span-9 space-y-4">
+            <div className="flex gap-1 border-b border-zinc-800 pb-0">
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="h-9 w-16 rounded-t bg-zinc-800 animate-pulse" />
+              ))}
+            </div>
+            <div className="grid grid-cols-3 gap-4 pt-2">
+              {Array.from({ length: 6 }).map((_, i) => (
+                <div key={i} className="rounded-xl border border-zinc-800 bg-zinc-900 p-4 h-24 animate-pulse" />
+              ))}
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -393,7 +421,7 @@ export default function ProjectDetailPage() {
 
           {/* Board Tab */}
           {activeTab === "board" && (
-            <div role="tabpanel" id="tabpanel-board" aria-labelledby="tab-board">
+            <div key="board" className="animate-tab-enter" role="tabpanel" id="tabpanel-board" aria-labelledby="tab-board">
               <KanbanBoard
                 workItems={workItems}
                 agents={agents}
@@ -408,35 +436,39 @@ export default function ProjectDetailPage() {
 
           {/* Inbox Tab */}
           {activeTab === "inbox" && (
-            <InboxPanel
-              notifications={notifications}
-              agents={agents}
-              loading={notificationsLoading}
-              onMarkRead={handleMarkRead}
-              onMarkAllRead={handleMarkAllRead}
-              onReply={handleInboxReply}
-              replyState={{
-                input: inboxReplyInput,
-                sending: inboxReplySending,
-                error: inboxReplyError,
-              }}
-              onReplyInputChange={setInboxReplyInput}
-            />
+            <div key="inbox" className="animate-tab-enter" role="tabpanel" id="tabpanel-inbox" aria-labelledby="tab-inbox">
+              <InboxPanel
+                notifications={notifications}
+                agents={agents}
+                loading={notificationsLoading}
+                onMarkRead={handleMarkRead}
+                onMarkAllRead={handleMarkAllRead}
+                onReply={handleInboxReply}
+                replyState={{
+                  input: inboxReplyInput,
+                  sending: inboxReplySending,
+                  error: inboxReplyError,
+                }}
+                onReplyInputChange={setInboxReplyInput}
+              />
+            </div>
           )}
 
           {/* Chat Tab */}
           {activeTab === "chat" && (
-            <ChatPanel
-              messages={chatMessages}
-              activeAgents={activeAgents}
-              targetAgentId={targetAgentId}
-              onTargetChange={setTargetAgentId}
-              onSendMessage={handleSendChat}
-              sending={chatSending}
-              error={chatError}
-              chatInput={chatInput}
-              onChatInputChange={setChatInput}
-            />
+            <div key="chat" className="animate-tab-enter" role="tabpanel" id="tabpanel-chat" aria-labelledby="tab-chat">
+              <ChatPanel
+                messages={chatMessages}
+                activeAgents={activeAgents}
+                targetAgentId={targetAgentId}
+                onTargetChange={setTargetAgentId}
+                onSendMessage={handleSendChat}
+                sending={chatSending}
+                error={chatError}
+                chatInput={chatInput}
+                onChatInputChange={setChatInput}
+              />
+            </div>
           )}
         </section>
       </div>

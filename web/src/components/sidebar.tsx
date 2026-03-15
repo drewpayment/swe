@@ -34,6 +34,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
   const pathname = usePathname();
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
+  const [badgePulse, setBadgePulse] = useState(false);
   const lastEventCount = useRef(0);
   const [bellOpen, setBellOpen] = useState(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
@@ -65,6 +66,9 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
       if (event.type === "notification_created") {
         // eslint-disable-next-line react-hooks/set-state-in-effect
         setUnreadCount((prev) => prev + 1);
+        // eslint-disable-next-line react-hooks/set-state-in-effect
+        setBadgePulse(true);
+        setTimeout(() => setBadgePulse(false), 600);
       }
     }
   }, [events]);
@@ -194,7 +198,10 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
             {unreadCount > 0 && (
               <span
                 aria-hidden="true"
-                className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white"
+                className={cn(
+                  "absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white transition-transform",
+                  badgePulse && "animate-bounce"
+                )}
               >
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>

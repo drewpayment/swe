@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
+import { StatCardSkeleton, CardSkeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
@@ -10,8 +11,6 @@ import {
   FileText,
   Activity,
   Plus,
-
-  Loader2,
   AlertCircle,
 } from "lucide-react";
 import Link from "next/link";
@@ -62,8 +61,30 @@ export default function DashboardPage() {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <Loader2 className="h-8 w-8 text-zinc-400 animate-spin" />
+      <div className="space-y-8">
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <div className="h-7 w-32 rounded-lg bg-zinc-800 animate-pulse" />
+            <div className="h-4 w-52 rounded-lg bg-zinc-800 animate-pulse" />
+          </div>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          {Array.from({ length: 4 }).map((_, i) => (
+            <StatCardSkeleton key={i} />
+          ))}
+        </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          <div className="lg:col-span-2 space-y-4">
+            <div className="h-6 w-20 rounded-lg bg-zinc-800 animate-pulse" />
+            {Array.from({ length: 2 }).map((_, i) => (
+              <CardSkeleton key={i} />
+            ))}
+          </div>
+          <div className="space-y-4">
+            <div className="h-6 w-28 rounded-lg bg-zinc-800 animate-pulse" />
+            <CardSkeleton />
+          </div>
+        </div>
       </div>
     );
   }
@@ -151,12 +172,18 @@ export default function DashboardPage() {
           <h2 className="text-lg font-semibold text-white">Projects</h2>
           {projects.length === 0 ? (
             <Card>
-              <CardContent className="flex flex-col items-center justify-center py-8">
-                <FolderKanban className="h-10 w-10 text-zinc-600 mb-3" />
-                <p className="text-sm text-zinc-400">No projects yet</p>
-                <p className="text-xs text-zinc-500 mt-1">
-                  Create a project to get started
+              <CardContent className="flex flex-col items-center justify-center py-10">
+                <FolderKanban className="h-12 w-12 text-zinc-600 mb-4" />
+                <p className="text-base font-medium text-zinc-300">No projects yet</p>
+                <p className="text-sm text-zinc-500 mt-1 text-center max-w-xs">
+                  Projects are workspaces where AI agents plan, build, and test your software end-to-end.
                 </p>
+                <Link href="/projects/new" className="mt-5">
+                  <Button size="md">
+                    <Plus className="mr-2 h-4 w-4" />
+                    Create your first project
+                  </Button>
+                </Link>
               </CardContent>
             </Card>
           ) : (

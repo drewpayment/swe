@@ -1,4 +1,4 @@
-// Domain types matching the Rust core types
+// Domain types matching Go backend types
 
 export type ProjectPhase =
   | "planning"

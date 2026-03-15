@@ -98,3 +98,13 @@ body {
 ::-webkit-scrollbar-thumb:hover {
   background: var(--color-border-secondary);
 }
+
+/* Tab transition animation */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.animate-tab-enter {
+  animation: fadeIn 0.15s ease-out;
+}
