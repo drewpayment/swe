@@ -462,10 +462,10 @@ export default function ProjectDetailPage() {
               {"\u26A0\uFE0F"} No repo
             </Badge>
           )}
-          <span
-            className={`h-2 w-2 rounded-full ${connected ? "bg-green-500" : "bg-red-500"}`}
-            title={connected ? "Live updates connected" : "Disconnected"}
-          />
+          <span className="flex items-center" title={connected ? "Live updates connected" : "Disconnected"}>
+            <span className={`h-2 w-2 rounded-full ${connected ? "bg-green-500" : "bg-red-500"}`} />
+            <span className="sr-only">{connected ? "Connected" : "Disconnected"}</span>
+          </span>
         </div>
       </div>
 

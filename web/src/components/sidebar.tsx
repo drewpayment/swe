@@ -131,10 +131,12 @@ export function Sidebar({ connected, events }: SidebarProps) {
         >
           <div className="relative">
             <Bell className="h-4 w-4" />
+            <span aria-live="polite" aria-atomic="true" className="sr-only">
+              {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}` : ""}
+            </span>
             {unreadCount > 0 && (
               <span
-                aria-live="polite"
-                aria-atomic="true"
+                aria-hidden="true"
                 className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white"
               >
                 {unreadCount > 99 ? "99+" : unreadCount}
