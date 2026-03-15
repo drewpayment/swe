@@ -228,9 +228,24 @@ export default function DashboardPage() {
                 </div>
               ) : (
                 agents.slice(0, 8).map((agent) => (
-                  <div key={agent.id} className="flex gap-3">
-                    <span className="text-base">
-                      {agent.status === "active" ? "🟢" : agent.status === "error" ? "🔴" : "⚪"}
+                  <div key={agent.id} className="flex gap-3 items-center">
+                    <span className="flex-shrink-0 flex items-center">
+                      <span
+                        className={`h-2.5 w-2.5 rounded-full ${
+                          agent.status === "active"
+                            ? "bg-green-500"
+                            : agent.status === "error"
+                              ? "bg-red-500"
+                              : "bg-zinc-500"
+                        }`}
+                      />
+                      <span className="sr-only">
+                        {agent.status === "active"
+                          ? "Active"
+                          : agent.status === "error"
+                            ? "Error"
+                            : "Inactive"}
+                      </span>
                     </span>
                     <div className="flex-1 min-w-0">
                       <p className="text-sm text-zinc-300 truncate">{agent.name}</p>

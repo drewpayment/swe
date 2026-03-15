@@ -484,6 +484,8 @@ export default function ProjectDetailPage() {
                 onClick={() => setShowSpawnMenu(!showSpawnMenu)}
                 disabled={spawning}
                 title="Add agent"
+                aria-label="Add agent"
+                aria-expanded={showSpawnMenu}
               >
                 {spawning ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -529,7 +531,10 @@ export default function ProjectDetailPage() {
                         </span>
                         <span
                           className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-zinc-900 ${statusIndicator(agent.status)}`}
-                        />
+                          title={agent.status.replace(/_/g, " ")}
+                        >
+                          <span className="sr-only">{agent.status.replace(/_/g, " ")}</span>
+                        </span>
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white truncate">
@@ -570,6 +575,7 @@ export default function ProjectDetailPage() {
                       className="h-5 px-1.5 text-xs text-zinc-600 hover:text-zinc-400"
                       onClick={handleCleanup}
                       disabled={cleaning}
+                      aria-label="Clean up inactive agents"
                     >
                       <RefreshCw
                         className={`h-3 w-3 ${cleaning ? "animate-spin" : ""}`}
@@ -590,6 +596,7 @@ export default function ProjectDetailPage() {
                       <button
                         className="text-zinc-600 hover:text-red-400 transition-colors"
                         onClick={() => handleDeleteAgent(agent.id)}
+                        aria-label={`Delete agent ${ROLE_LABEL[agent.role] ?? agent.role}`}
                       >
                         <Trash2 className="h-3 w-3" />
                       </button>
@@ -604,10 +611,12 @@ export default function ProjectDetailPage() {
         {/* Main Content */}
         <div className="col-span-9 space-y-6">
           {/* Tab Switcher */}
-          <div className="flex gap-1 border-b border-zinc-800 pb-0">
+          <div role="tablist" className="flex gap-1 border-b border-zinc-800 pb-0">
             {(["board", "inbox", "chat"] as const).map((tab) => (
               <button
                 key={tab}
+                role="tab"
+                aria-selected={activeTab === tab}
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab
@@ -912,6 +921,7 @@ export default function ProjectDetailPage() {
                     value={inboxReplyInput}
                     onChange={(e) => setInboxReplyInput(e.target.value)}
                     placeholder="Reply to Cosmo..."
+                    aria-label="Reply to Cosmo"
                     className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-blue-500 focus:outline-none"
                     disabled={!agents.some((a) => a.role === "project_orchestrator" && a.status !== "terminated" && a.status !== "complete")}
                     onKeyDown={(e) => {
@@ -921,6 +931,7 @@ export default function ProjectDetailPage() {
                   <Button
                     size="sm"
                     onClick={handleInboxReply}
+                    aria-label="Send reply"
                     disabled={
                       inboxReplySending ||
                       !inboxReplyInput.trim() ||
@@ -1027,6 +1038,7 @@ export default function ProjectDetailPage() {
                       ? "Waiting for agents..."
                       : "Send a message to interact with agents..."
                   }
+                  aria-label="Send message to agent"
                   className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-blue-500 focus:outline-none"
                   disabled={activeAgents.length === 0}
                   onKeyDown={(e) => {
@@ -1036,6 +1048,7 @@ export default function ProjectDetailPage() {
                 <Button
                   size="sm"
                   onClick={handleSendChat}
+                  aria-label="Send message"
                   disabled={
                     chatSending || !chatInput.trim() || activeAgents.length === 0
                   }

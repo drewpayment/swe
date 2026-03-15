@@ -125,12 +125,18 @@ export function Sidebar({ connected, events }: SidebarProps) {
       <div className="border-b border-zinc-800 px-3 py-3 relative" ref={bellRef}>
         <button
           onClick={() => setBellOpen((prev) => !prev)}
+          aria-label="Notifications"
+          aria-expanded={bellOpen}
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
         >
           <div className="relative">
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
-              <span className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white">
+              <span
+                aria-live="polite"
+                aria-atomic="true"
+                className="absolute -top-1.5 -right-1.5 flex h-4 min-w-4 items-center justify-center rounded-full bg-blue-600 px-1 text-[10px] font-bold text-white"
+              >
                 {unreadCount > 99 ? "99+" : unreadCount}
               </span>
             )}
