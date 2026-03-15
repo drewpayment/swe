@@ -36,6 +36,8 @@ export function Sidebar({ connected, events }: SidebarProps) {
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const bellRef = useRef<HTMLDivElement>(null);
+  const bellButtonRef = useRef<HTMLButtonElement>(null);
+  const bellFocusIndexRef = useRef<number>(0);
 
   // Poll unread count every 15 seconds
   useEffect(() => {
@@ -78,8 +80,52 @@ export function Sidebar({ connected, events }: SidebarProps) {
   useEffect(() => {
     if (bellOpen) {
       fetchNotifications();
+      // Focus first item after render
+      bellFocusIndexRef.current = 0;
+      setTimeout(() => {
+        if (bellRef.current) {
+          const items = bellRef.current.querySelectorAll<HTMLElement>('[role="option"]');
+          items[0]?.focus();
+        }
+      }, 50);
     }
   }, [bellOpen, fetchNotifications]);
+
+  function handleBellKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    if (!bellOpen) return;
+    const items = bellRef.current
+      ? Array.from(bellRef.current.querySelectorAll<HTMLElement>('[role="option"]'))
+      : [];
+    if (items.length === 0 && e.key !== "Escape") return;
+
+    switch (e.key) {
+      case "Escape":
+        e.preventDefault();
+        setBellOpen(false);
+        bellButtonRef.current?.focus();
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        bellFocusIndexRef.current = (bellFocusIndexRef.current + 1) % items.length;
+        items[bellFocusIndexRef.current]?.focus();
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        bellFocusIndexRef.current = (bellFocusIndexRef.current - 1 + items.length) % items.length;
+        items[bellFocusIndexRef.current]?.focus();
+        break;
+      case "Home":
+        e.preventDefault();
+        bellFocusIndexRef.current = 0;
+        items[0]?.focus();
+        break;
+      case "End":
+        e.preventDefault();
+        bellFocusIndexRef.current = items.length - 1;
+        items[items.length - 1]?.focus();
+        break;
+    }
+  }
 
   // Close dropdown on click outside
   useEffect(() => {
@@ -122,8 +168,9 @@ export function Sidebar({ connected, events }: SidebarProps) {
       </div>
 
       {/* Notification bell */}
-      <div className="border-b border-zinc-800 px-3 py-3 relative" ref={bellRef}>
+      <div className="border-b border-zinc-800 px-3 py-3 relative" ref={bellRef} onKeyDown={handleBellKeyDown}>
         <button
+          ref={bellButtonRef}
           onClick={() => setBellOpen((prev) => !prev)}
           aria-label="Notifications"
           aria-expanded={bellOpen}
@@ -148,7 +195,11 @@ export function Sidebar({ connected, events }: SidebarProps) {
         </span>
 
         {bellOpen && (
-          <div className="absolute left-2 right-2 top-full z-50 mt-1 max-h-96 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl">
+          <div
+            role="listbox"
+            aria-label="Notifications"
+            className="absolute left-2 right-2 top-full z-50 mt-1 max-h-96 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl"
+          >
             {notificationsLoading && notifications.length === 0 ? (
               <div className="px-4 py-6 text-center text-xs text-zinc-500">
                 Loading...
@@ -162,6 +213,8 @@ export function Sidebar({ connected, events }: SidebarProps) {
                 {notifications.map((notif) => (
                   <button
                     key={notif.id}
+                    role="option"
+                    aria-selected={false}
                     onClick={() => handleNotificationClick(notif)}
                     className={cn(
                       "flex w-full items-start gap-2.5 px-3 py-2.5 text-left hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-b-0",

@@ -170,6 +170,9 @@ export default function ProjectDetailPage() {
   const [inboxReplyError, setInboxReplyError] = useState<string | null>(null);
   const markReadCooldownRef = useRef<number>(0);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const spawnMenuRef = useRef<HTMLDivElement>(null);
+  const spawnButtonRef = useRef<HTMLButtonElement>(null);
+  const spawnFocusIndexRef = useRef<number>(0);
   const { connected, events } = useWebSocket();
 
   const projectId = typeof id === "string" ? id : Array.isArray(id) ? id[0] : "";
@@ -341,6 +344,65 @@ export default function ProjectDetailPage() {
     }
   }
 
+  // Focus first spawn menu item when menu opens; close on click-outside
+  useEffect(() => {
+    if (showSpawnMenu) {
+      spawnFocusIndexRef.current = 0;
+      setTimeout(() => {
+        if (spawnMenuRef.current) {
+          const items = spawnMenuRef.current.querySelectorAll<HTMLElement>('[role="menuitem"]');
+          items[0]?.focus();
+        }
+      }, 50);
+    }
+  }, [showSpawnMenu]);
+
+  useEffect(() => {
+    if (!showSpawnMenu) return;
+    function handleClickOutside(e: MouseEvent) {
+      if (spawnMenuRef.current && !spawnMenuRef.current.contains(e.target as Node) &&
+          spawnButtonRef.current && !spawnButtonRef.current.contains(e.target as Node)) {
+        setShowSpawnMenu(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showSpawnMenu]);
+
+  function handleSpawnMenuKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    const items = spawnMenuRef.current
+      ? Array.from(spawnMenuRef.current.querySelectorAll<HTMLElement>('[role="menuitem"]'))
+      : [];
+
+    switch (e.key) {
+      case "Escape":
+        e.preventDefault();
+        setShowSpawnMenu(false);
+        spawnButtonRef.current?.focus();
+        break;
+      case "ArrowDown":
+        e.preventDefault();
+        spawnFocusIndexRef.current = (spawnFocusIndexRef.current + 1) % items.length;
+        items[spawnFocusIndexRef.current]?.focus();
+        break;
+      case "ArrowUp":
+        e.preventDefault();
+        spawnFocusIndexRef.current = (spawnFocusIndexRef.current - 1 + items.length) % items.length;
+        items[spawnFocusIndexRef.current]?.focus();
+        break;
+      case "Home":
+        e.preventDefault();
+        spawnFocusIndexRef.current = 0;
+        items[0]?.focus();
+        break;
+      case "End":
+        e.preventDefault();
+        spawnFocusIndexRef.current = items.length - 1;
+        items[items.length - 1]?.focus();
+        break;
+    }
+  }
+
   async function handleSpawnAgent(role: AgentRole, label: string) {
     setSpawning(true);
     setShowSpawnMenu(false);
@@ -478,6 +540,7 @@ export default function ProjectDetailPage() {
             </h2>
             <div className="relative">
               <Button
+                ref={spawnButtonRef}
                 size="sm"
                 variant="ghost"
                 className="h-6 w-6 p-0"
@@ -494,11 +557,18 @@ export default function ProjectDetailPage() {
                 )}
               </Button>
               {showSpawnMenu && (
-                <div className="absolute right-0 top-8 z-10 w-40 rounded-lg border border-zinc-700 bg-zinc-900 shadow-lg py-1">
+                <div
+                  ref={spawnMenuRef}
+                  role="menu"
+                  aria-label="Add agent"
+                  onKeyDown={handleSpawnMenuKeyDown}
+                  className="absolute right-0 top-8 z-10 w-40 rounded-lg border border-zinc-700 bg-zinc-900 shadow-lg py-1"
+                >
                   {SPAWNABLE_ROLES.map((r) => (
                     <button
                       key={r.role}
-                      className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800"
+                      role="menuitem"
+                      className="w-full text-left px-3 py-1.5 text-xs text-zinc-300 hover:bg-zinc-800 focus:bg-zinc-800 focus:outline-none"
                       onClick={() => handleSpawnAgent(r.role, r.label)}
                     >
                       {ROLE_EMOJI[r.role]} {r.label}
