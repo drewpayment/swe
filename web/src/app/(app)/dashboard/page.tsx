@@ -96,7 +96,7 @@ export default function DashboardPage() {
       )}
 
       {/* Stats */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Card>
           <CardContent className="flex items-center gap-4">
             <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-blue-900/50">
@@ -145,9 +145,9 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Projects */}
-        <div className="col-span-2 space-y-4">
+        <div className="lg:col-span-2 space-y-4">
           <h2 className="text-lg font-semibold text-white">Projects</h2>
           {projects.length === 0 ? (
             <Card>

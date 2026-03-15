@@ -336,7 +336,7 @@ export default function ProjectDetailPage() {
       </div>
       </section>
 
-      <div className="grid grid-cols-12 gap-6">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Agents Sidebar */}
         <AgentsSidebar
           agents={agents}
@@ -347,7 +347,7 @@ export default function ProjectDetailPage() {
         />
 
         {/* Main Content */}
-        <section aria-label="Project content" className="col-span-9 space-y-6">
+        <section aria-label="Project content" className="lg:col-span-9 space-y-6">
           {/* Tab Switcher */}
           <div role="tablist" className="flex gap-1 border-b border-zinc-800 pb-0">
             {(["board", "inbox", "chat"] as const).map((tab) => (

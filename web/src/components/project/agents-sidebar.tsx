@@ -152,7 +152,7 @@ export function AgentsSidebar({
   }
 
   return (
-    <section aria-label="Agents" className="col-span-3 space-y-4">
+    <section aria-label="Agents" className="lg:col-span-3 space-y-4">
       <div className="flex items-center justify-between">
         <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
           Agents ({activeAgents.length})

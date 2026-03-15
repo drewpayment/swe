@@ -25,9 +25,11 @@ const navItems = [
 interface SidebarProps {
   connected?: boolean;
   events?: StreamEvent[];
+  sidebarOpen?: boolean;
+  onClose?: () => void;
 }
 
-export function Sidebar({ connected, events }: SidebarProps) {
+export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -153,7 +155,16 @@ export function Sidebar({ connected, events }: SidebarProps) {
   }
 
   return (
-    <aside className="flex h-screen w-64 flex-col border-r border-zinc-800 bg-zinc-950">
+    <aside
+      className={cn(
+        "flex h-screen w-64 flex-col border-r border-zinc-800 bg-zinc-950",
+        // Desktop: always visible
+        "lg:relative lg:translate-x-0 lg:flex",
+        // Mobile: fixed drawer, shown/hidden based on sidebarOpen
+        "fixed inset-y-0 left-0 z-50 transition-transform duration-200 ease-in-out",
+        sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+      )}
+    >
       {/* Logo */}
       <div className="flex items-center gap-3 border-b border-zinc-800 px-6 py-5">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
@@ -268,6 +279,7 @@ export function Sidebar({ connected, events }: SidebarProps) {
               key={item.href}
               href={item.href}
               aria-current={isActive ? "page" : undefined}
+              onClick={() => onClose?.()}
               className={cn(
                 "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
                 isActive

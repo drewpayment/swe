@@ -124,7 +124,7 @@ export default function NewProjectPage() {
               <label className="block text-sm font-medium text-zinc-300 mb-2">
                 Code Source
               </label>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                 {repoSourceOptions.map((opt) => (
                   <button
                     key={opt.value}
