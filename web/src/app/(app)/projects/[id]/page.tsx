@@ -17,6 +17,9 @@ import {
   AlertCircle,
   Loader2,
   Inbox,
+  ExternalLink,
+  Folder,
+  AlertTriangle,
 } from "lucide-react";
 import Link from "next/link";
 import {
@@ -305,7 +308,7 @@ export default function ProjectDetailPage() {
             <div className="flex items-center gap-3 mt-2">
               <div className="flex-1 max-w-xs h-1.5 bg-zinc-800 rounded-full overflow-hidden">
                 <div
-                  className="h-full bg-emerald-500 rounded-full transition-all duration-500"
+                  className="h-full bg-green-500 rounded-full transition-all duration-500"
                   style={{ width: `${progressPct}%` }}
                 />
               </div>
@@ -324,15 +327,15 @@ export default function ProjectDetailPage() {
           </Badge>
           {project.repo_source === "remote" && project.repo_url ? (
             <Badge variant="default" className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-300 border-zinc-700">
-              {"\uD83D\uDD17"} {project.repo_url}
+              <ExternalLink className="h-3 w-3 mr-1 inline-block" aria-hidden="true" /> {project.repo_url}
             </Badge>
           ) : project.repo_source === "local" && project.working_directory ? (
             <Badge variant="default" className="text-xs px-2 py-0.5 bg-zinc-800 text-zinc-300 border-zinc-700">
-              {"\uD83D\uDCC1"} {project.working_directory}
+              <Folder className="h-3 w-3 mr-1 inline-block" aria-hidden="true" /> {project.working_directory}
             </Badge>
           ) : (
             <Badge variant="warning" className="text-xs px-2 py-0.5">
-              {"\u26A0\uFE0F"} No repo
+              <AlertTriangle className="h-3 w-3 mr-1 inline-block" aria-hidden="true" /> No repo
             </Badge>
           )}
           <span className="flex items-center" title={connected ? "Live updates connected" : "Disconnected"}>

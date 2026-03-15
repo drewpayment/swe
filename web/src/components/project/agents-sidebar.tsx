@@ -215,7 +215,7 @@ export const AgentsSidebar = memo(function AgentsSidebar({
               <Card className="p-3 cursor-pointer hover:border-zinc-600 transition-colors group">
                 <div className="flex items-center gap-3">
                   <div className="relative">
-                    <span className="text-lg">
+                    <span className="text-lg" aria-hidden="true">
                       {ROLE_EMOJI[agent.role] ?? "🤖"}
                     </span>
                     <span

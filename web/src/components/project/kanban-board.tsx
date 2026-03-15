@@ -21,7 +21,7 @@ import {
 const workItemStatusIcon = (status: WorkItemStatus) => {
   switch (status) {
     case "complete":
-      return <CheckCircle className="h-4 w-4 text-emerald-400" />;
+      return <CheckCircle className="h-4 w-4 text-green-400" />;
     case "in_progress":
       return <Play className="h-4 w-4 text-blue-400" />;
     case "in_review":
@@ -65,7 +65,7 @@ const KANBAN_COLUMNS: { key: WorkItemStatus; label: string; color: string }[] = 
   { key: "assigned", label: "Assigned", color: "border-yellow-700" },
   { key: "in_progress", label: "In Progress", color: "border-blue-700" },
   { key: "in_review", label: "Review", color: "border-purple-700" },
-  { key: "complete", label: "Done", color: "border-emerald-700" },
+  { key: "complete", label: "Done", color: "border-green-700" },
 ];
 
 interface KanbanBoardProps {

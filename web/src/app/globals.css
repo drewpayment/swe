@@ -76,6 +76,11 @@ body {
 }
 
 /* Scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-border-primary) transparent;
+}
+
 ::-webkit-scrollbar {
   width: 6px;
   height: 6px;
