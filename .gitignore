@@ -38,3 +38,6 @@ docker-compose.override.yml
 
 # SWE config (user-specific)
 config/litellm.yaml
+
+# Worktrees
+.worktrees/
