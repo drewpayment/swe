@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/com
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Save, RefreshCw, Loader2, AlertCircle, Check } from "lucide-react";
-import { getSettings, updateSettings, checkHealth } from "@/lib/api";
+import { getSettings, updateSettings, checkServiceHealth } from "@/lib/api";
 import type { Settings } from "@/lib/types";
 
 export default function SettingsPage() {
@@ -14,7 +14,7 @@ export default function SettingsPage() {
   const [saving, setSaving] = useState(false);
   const [saveResult, setSaveResult] = useState<{ ok: boolean; message: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [apiStatus, setApiStatus] = useState<string | null>(null);
+  const [serviceStatuses, setServiceStatuses] = useState<Record<string, string>>({});
   const [checkingStatus, setCheckingStatus] = useState(false);
 
   useEffect(() => {
@@ -49,8 +49,12 @@ export default function SettingsPage() {
 
   async function handleRefreshStatus() {
     setCheckingStatus(true);
-    const health = await checkHealth();
-    setApiStatus(health?.status ?? "offline");
+    const res = await checkServiceHealth();
+    if (res.success && res.data) {
+      setServiceStatuses(res.data);
+    } else {
+      setServiceStatuses({ "SWE API": "offline" });
+    }
     setCheckingStatus(false);
   }
 
@@ -230,19 +234,18 @@ export default function SettingsPage() {
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-zinc-300">SWE API</span>
-              <Badge variant={apiStatus === "healthy" ? "success" : apiStatus ? "error" : "default"}>
-                {apiStatus ?? "unknown"}
-              </Badge>
-            </div>
-            {["Temporal Server", "LiteLLM Proxy", "Kubernetes", "PostgreSQL", "Redis"].map(
-              (service) => (
-                <div key={service} className="flex items-center justify-between">
-                  <span className="text-sm text-zinc-300">{service}</span>
-                  <Badge>unknown</Badge>
-                </div>
-              )
+            {["SWE API", "PostgreSQL", "Temporal Server", "LiteLLM Proxy", "Redis"].map(
+              (service) => {
+                const status = serviceStatuses[service];
+                return (
+                  <div key={service} className="flex items-center justify-between">
+                    <span className="text-sm text-zinc-300">{service}</span>
+                    <Badge variant={status === "healthy" ? "success" : status === "unhealthy" ? "error" : "default"}>
+                      {status ?? "unknown"}
+                    </Badge>
+                  </div>
+                );
+              }
             )}
           </div>
           <Button

@@ -1,7 +1,11 @@
-# Rust
-/target/
-**/*.rs.bk
-Cargo.lock
+# Go binaries
+/api
+/cli
+/worker
+/swe-api
+/swe-worker
+/swe
+/vendor/
 
 # Node.js (web/)
 web/node_modules/

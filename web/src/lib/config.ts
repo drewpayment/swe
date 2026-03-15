@@ -15,10 +15,12 @@ export function getApiBaseUrl(): string {
 
   const hostname = getHostname();
   if (hostname) {
+    const isSecure = typeof window !== "undefined" && window.location.protocol === "https:";
+    const proto = isSecure ? "https" : "http";
     if (hostname.endsWith(".orb.local")) {
-      return "http://swe-api.swe.orb.local";
+      return `${proto}://swe-api.swe.orb.local`;
     }
-    return "http://localhost:8080";
+    return `${proto}://localhost:8080`;
   }
 
   // Server-side: Docker internal network
@@ -30,10 +32,12 @@ export function getWsUrl(): string {
 
   const hostname = getHostname();
   if (hostname) {
+    const isSecure = typeof window !== "undefined" && window.location.protocol === "https:";
+    const wsProto = isSecure ? "wss" : "ws";
     if (hostname.endsWith(".orb.local")) {
-      return "ws://swe-api.swe.orb.local/ws/stream";
+      return `${wsProto}://swe-api.swe.orb.local/ws/stream`;
     }
-    return "ws://localhost:8080/ws/stream";
+    return `${wsProto}://localhost:8080/ws/stream`;
   }
 
   return "ws://swe-api:8080/ws/stream";

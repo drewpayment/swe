@@ -1,5 +1,3 @@
-version: "3.8"
-
 services:
   # ─── Temporal ─────────────────────────────────────────
   temporal:
@@ -57,6 +55,11 @@ services:
     volumes:
       - ./config/litellm.yaml:/app/config.yaml
     command: ["--config", "/app/config.yaml"]
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY:-}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      - GOOGLE_API_KEY=${GOOGLE_API_KEY:-}
+      - LITELLM_MASTER_KEY=${LITELLM_MASTER_KEY:-}
     networks:
       - swe-net
 
@@ -113,10 +116,10 @@ services:
     ports:
       - "8080:8080"
     environment:
-      - RUST_LOG=info
-      - DATABASE_URL=postgres://swe:swe@postgres:5432/swe
-      - TEMPORAL_ADDRESS=http://temporal:7233
+      - DATABASE_URL=postgres://swe:swe@postgres:5432/swe?sslmode=disable
+      - TEMPORAL_ADDRESS=temporal:7233
       - LITELLM_URL=http://litellm:4000
+      - LITELLM_API_KEY=sk-swe-dev-key
       - REDIS_URL=redis://redis:6379
     depends_on:
       swe-migrate:
@@ -135,11 +138,15 @@ services:
       dockerfile: Dockerfile
       target: worker
     environment:
-      - RUST_LOG=info
-      - TEMPORAL_ADDRESS=http://temporal:7233
+      - DATABASE_URL=postgres://swe:swe@postgres:5432/swe?sslmode=disable
+      - TEMPORAL_ADDRESS=temporal:7233
       - LITELLM_URL=http://litellm:4000
+      - LITELLM_API_KEY=sk-swe-dev-key
       - REDIS_URL=redis://redis:6379
+      - API_INTERNAL_URL=http://swe-api:8080
     depends_on:
+      swe-migrate:
+        condition: service_completed_successfully
       temporal:
         condition: service_started
     networks:
@@ -153,8 +160,8 @@ services:
     ports:
       - "3000:3000"
     environment:
-      - NEXT_PUBLIC_API_URL=http://localhost:8080
-      - NEXT_PUBLIC_WS_URL=ws://localhost:8080/ws/stream
+      # NEXT_PUBLIC_API_URL/WS_URL intentionally omitted —
+      # config.ts detects OrbStack (.orb.local) vs localhost at runtime
       - BETTER_AUTH_SECRET=change-me-in-production
       - DATABASE_URL=postgres://swe:swe@postgres:5432/swe
     depends_on:
