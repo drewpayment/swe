@@ -259,7 +259,7 @@ export const AgentsSidebar = memo(function AgentsSidebar({
                 <Button
                   size="sm"
                   variant="ghost"
-                  className="h-5 px-1.5 text-xs text-zinc-600 hover:text-zinc-400"
+                  className="min-h-[44px] min-w-[44px] px-1.5 text-xs text-zinc-600 hover:text-zinc-400"
                   onClick={handleCleanup}
                   disabled={cleaning}
                   aria-label="Clean up inactive agents"
@@ -281,7 +281,7 @@ export const AgentsSidebar = memo(function AgentsSidebar({
                     {ROLE_LABEL[agent.role] ?? agent.role}
                   </span>
                   <button
-                    className="text-zinc-600 hover:text-red-400 transition-colors"
+                    className="min-h-[44px] min-w-[44px] flex items-center justify-center text-zinc-600 hover:text-red-400 transition-colors"
                     onClick={() => handleDeleteAgent(agent.id)}
                     aria-label={`Delete agent ${ROLE_LABEL[agent.role] ?? agent.role}`}
                   >

@@ -127,13 +127,13 @@ export const KanbanBoard = memo(function KanbanBoard({
             </p>
           </div>
         ) : viewMode === "kanban" ? (
-          <div className="flex gap-3 overflow-x-auto pb-2">
+          <div className="flex flex-col gap-3 md:flex-row md:overflow-x-auto pb-2">
             {KANBAN_COLUMNS.map((col) => {
               const items = workItems.filter((w) => w.status === col.key);
               return (
                 <div
                   key={col.key}
-                  className={`flex-1 min-w-[160px] rounded-lg border ${col.color} bg-zinc-900/50 p-2`}
+                  className={`flex-1 md:min-w-[160px] rounded-lg border ${col.color} bg-zinc-900/50 p-2`}
                 >
                   <div className="flex items-center justify-between mb-2 px-1">
                     <span className="text-xs font-medium text-zinc-400">
@@ -147,7 +147,7 @@ export const KanbanBoard = memo(function KanbanBoard({
                     {items.map((item) => (
                       <div
                         key={item.id}
-                        className="rounded-md border border-zinc-800 bg-zinc-900 p-2 hover:border-zinc-700 transition-colors"
+                        className="rounded-md border border-zinc-800 bg-zinc-900 p-2 min-h-[44px] hover:border-zinc-700 transition-colors"
                       >
                         <p className="text-xs font-medium text-zinc-300 leading-snug">
                           {item.title}

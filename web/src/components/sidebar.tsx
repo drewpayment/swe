@@ -210,7 +210,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
           <div
             role="listbox"
             aria-label="Notifications"
-            className="absolute left-2 right-2 top-full z-50 mt-1 max-h-96 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl"
+            className="fixed inset-x-4 top-16 z-50 mt-1 max-h-96 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl lg:absolute lg:inset-x-auto lg:left-2 lg:right-2 lg:top-full"
           >
             {notificationsLoading && notifications.length === 0 ? (
               <div className="px-4 py-6 text-center text-xs text-zinc-500">
@@ -229,7 +229,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
                     aria-selected={false}
                     onClick={() => handleNotificationClick(notif)}
                     className={cn(
-                      "flex w-full items-start gap-2.5 px-3 py-2.5 text-left hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-b-0",
+                      "flex w-full min-h-[44px] items-start gap-2.5 px-3 py-2.5 text-left hover:bg-zinc-800 transition-colors border-b border-zinc-800 last:border-b-0",
                       !notif.read && "bg-blue-950/20"
                     )}
                   >
