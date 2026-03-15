@@ -16,8 +16,16 @@ export default function RootLayout({
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className="dark">
-      <body className={`${inter.className} bg-zinc-950 text-zinc-100 antialiased`}>
+    <html lang="en" suppressHydrationWarning>
+      {/* Apply theme before paint to avoid flash of wrong theme */}
+      <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `(function(){var t=localStorage.getItem('theme');if(t!=='light')document.documentElement.classList.add('dark');})();`,
+          }}
+        />
+      </head>
+      <body className={`${inter.className} antialiased`}>
         {children}
       </body>
     </html>

@@ -15,6 +15,7 @@ import {
 import { getUnreadCount, listNotifications, markNotificationRead } from "@/lib/api";
 import type { Notification } from "@/lib/types";
 import type { StreamEvent } from "@/lib/ws";
+import { ThemeToggle } from "@/components/theme-toggle";
 
 const navItems = [
   { href: "/dashboard", label: "Dashboard", icon: LayoutDashboard },
@@ -308,6 +309,9 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
             />
             {connected ? "Connected" : "Offline"}
           </span>
+        </div>
+        <div className="mt-2 flex justify-end">
+          <ThemeToggle />
         </div>
       </div>
     </aside>
