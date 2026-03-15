@@ -484,6 +484,7 @@ export default function ProjectDetailPage() {
   return (
     <div className="space-y-6">
       {/* Header */}
+      <section aria-label="Project overview">
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <h1 className="text-2xl font-bold text-white">{project.name}</h1>
@@ -530,10 +531,11 @@ export default function ProjectDetailPage() {
           </span>
         </div>
       </div>
+      </section>
 
       <div className="grid grid-cols-12 gap-6">
         {/* Agents Sidebar */}
-        <div className="col-span-3 space-y-4">
+        <section aria-label="Agents" className="col-span-3 space-y-4">
           <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold text-zinc-400 uppercase tracking-wider">
               Agents ({activeAgents.length})
@@ -674,10 +676,10 @@ export default function ProjectDetailPage() {
               )}
             </div>
           )}
-        </div>
+        </section>
 
         {/* Main Content */}
-        <div className="col-span-9 space-y-6">
+        <section aria-label="Project content" className="col-span-9 space-y-6">
           {/* Tab Switcher */}
           <div role="tablist" className="flex gap-1 border-b border-zinc-800 pb-0">
             {(["board", "inbox", "chat"] as const).map((tab) => (
@@ -1136,7 +1138,7 @@ export default function ProjectDetailPage() {
             </CardContent>
           </Card>
           )}
-        </div>
+        </section>
       </div>
     </div>
   );

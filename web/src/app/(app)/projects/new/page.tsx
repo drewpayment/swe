@@ -20,10 +20,15 @@ export default function NewProjectPage() {
   const [initialPrompt, setInitialPrompt] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [nameError, setNameError] = useState<string | null>(null);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    if (!name.trim()) return;
+    if (!name.trim()) {
+      setNameError("Project name is required");
+      return;
+    }
+    setNameError(null);
 
     setSubmitting(true);
     setError(null);
@@ -88,11 +93,21 @@ export default function NewProjectPage() {
               <input
                 type="text"
                 value={name}
-                onChange={(e) => setName(e.target.value)}
+                onChange={(e) => {
+                  setName(e.target.value);
+                  if (e.target.value.trim()) setNameError(null);
+                }}
                 placeholder="My Project"
                 className={inputClass}
+                aria-describedby={nameError ? "name-error" : undefined}
+                aria-invalid={nameError ? true : undefined}
                 required
               />
+              {nameError && (
+                <p id="name-error" className="mt-1 text-sm text-red-400">
+                  {nameError}
+                </p>
+              )}
             </div>
 
             <div>

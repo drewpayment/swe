@@ -16,6 +16,7 @@ export default function SettingsPage() {
   const [error, setError] = useState<string | null>(null);
   const [serviceStatuses, setServiceStatuses] = useState<Record<string, string>>({});
   const [checkingStatus, setCheckingStatus] = useState(false);
+  const [proxyUrlError, setProxyUrlError] = useState<string | null>(null);
 
   useEffect(() => {
     async function fetchData() {
@@ -80,6 +81,23 @@ export default function SettingsPage() {
     });
   }
 
+  function validateProxyUrl(value: string) {
+    if (!value.trim()) {
+      setProxyUrlError(null);
+      return;
+    }
+    try {
+      const url = new URL(value);
+      if (url.protocol !== "http:" && url.protocol !== "https:") {
+        setProxyUrlError("URL must start with http:// or https://");
+      } else {
+        setProxyUrlError(null);
+      }
+    } catch {
+      setProxyUrlError("Please enter a valid URL");
+    }
+  }
+
   function updateK8s(field: string, value: string) {
     if (!settings) return;
     setSettings({
@@ -139,8 +157,16 @@ export default function SettingsPage() {
               type="text"
               value={settings.llm.proxy_url}
               onChange={(e) => updateLlm("proxy_url", e.target.value)}
+              onBlur={(e) => validateProxyUrl(e.target.value)}
+              aria-describedby={proxyUrlError ? "proxy-url-error" : undefined}
+              aria-invalid={proxyUrlError ? true : undefined}
               className={inputClass}
             />
+            {proxyUrlError && (
+              <p id="proxy-url-error" className="mt-1 text-sm text-red-400">
+                {proxyUrlError}
+              </p>
+            )}
           </div>
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-1.5">

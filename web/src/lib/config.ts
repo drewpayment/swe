@@ -10,6 +10,8 @@ function getHostname(): string | null {
   return null;
 }
 
+const orbDomain = process.env.NEXT_PUBLIC_ORBSTACK_DOMAIN || ".orb.local";
+
 export function getApiBaseUrl(): string {
   if (process.env.NEXT_PUBLIC_API_URL) return process.env.NEXT_PUBLIC_API_URL;
 
@@ -17,8 +19,8 @@ export function getApiBaseUrl(): string {
   if (hostname) {
     const isSecure = typeof window !== "undefined" && window.location.protocol === "https:";
     const proto = isSecure ? "https" : "http";
-    if (hostname.endsWith(".orb.local")) {
-      return `${proto}://swe-api.swe.orb.local`;
+    if (hostname.endsWith(orbDomain)) {
+      return `${proto}://swe-api.swe${orbDomain}`;
     }
     return `${proto}://localhost:8080`;
   }
@@ -34,8 +36,8 @@ export function getWsUrl(): string {
   if (hostname) {
     const isSecure = typeof window !== "undefined" && window.location.protocol === "https:";
     const wsProto = isSecure ? "wss" : "ws";
-    if (hostname.endsWith(".orb.local")) {
-      return `${wsProto}://swe-api.swe.orb.local/ws/stream`;
+    if (hostname.endsWith(orbDomain)) {
+      return `${wsProto}://swe-api.swe${orbDomain}/ws/stream`;
     }
     return `${wsProto}://localhost:8080/ws/stream`;
   }
