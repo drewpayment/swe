@@ -9,6 +9,8 @@ import { ArrowLeft, Cpu, Clock, Zap, Loader2, AlertCircle, Send, MessageSquare, 
 import Link from "next/link";
 import type { Agent, AgentStatus, ChatMessage, WorkItem } from "@/lib/types";
 import { getAgent, listWorkItems, listAgentChatMessages, sendMessage } from "@/lib/api";
+import { timeAgo } from "@/lib/utils";
+import { Input } from "@/components/ui/input";
 
 /** Extract file paths and commit references from conversation messages. */
 function extractCodeActivity(messages: ChatMessage[]) {
@@ -63,19 +65,6 @@ function extractCodeActivity(messages: ChatMessage[]) {
   }
 
   return { files: fileSet, commits: commitSet, actions: actions.slice(-20) };
-}
-
-function timeAgo(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
 }
 
 const statusBadgeVariant = (status: AgentStatus) => {
@@ -341,12 +330,12 @@ export default function AgentDetailPage() {
             <div ref={chatEndRef} />
           </div>
           <div className="flex gap-2">
-            <input
+            <Input
               type="text"
               value={chatInput}
               onChange={(e) => setChatInput(e.target.value)}
               placeholder="Send a message..."
-              className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none"
+              className="flex-1 px-4 py-2"
               onKeyDown={(e) => { if (e.key === "Enter") handleSendChat(); }}
             />
             <button

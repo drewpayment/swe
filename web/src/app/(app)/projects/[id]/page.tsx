@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { ROLE_EMOJI, ROLE_LABEL, PHASE_LABEL } from "@/lib/types";
+import { ROLE_EMOJI, ROLE_LABEL, PHASE_LABEL, PHASE_VARIANT } from "@/lib/types";
 import type {
   AgentRole,
   AgentStatus,
@@ -56,6 +56,7 @@ import {
   markAllNotificationsRead,
 } from "@/lib/api";
 import { useWebSocket } from "@/lib/ws";
+import { Input } from "@/components/ui/input";
 
 /* ─── Status helpers ─── */
 
@@ -113,16 +114,6 @@ const priorityColor = (p: string) => {
     case "low": return "text-zinc-600";
     default: return "text-zinc-500";
   }
-};
-
-const phaseVariant: Record<string, "info" | "warning" | "success" | "default"> = {
-  planning: "info",
-  designing: "info",
-  building: "warning",
-  testing: "warning",
-  deploying: "warning",
-  complete: "success",
-  archived: "default",
 };
 
 const SPAWNABLE_ROLES: { role: AgentRole; label: string }[] = [
@@ -507,7 +498,7 @@ export default function ProjectDetailPage() {
         </div>
         <div className="flex items-center gap-3">
           <Badge
-            variant={phaseVariant[project.phase] ?? "default"}
+            variant={PHASE_VARIANT[project.phase as ProjectPhase] ?? "default"}
             className="text-sm px-3 py-1"
           >
             Phase: {PHASE_LABEL[project.phase as ProjectPhase] ?? project.phase}
@@ -988,13 +979,13 @@ export default function ProjectDetailPage() {
                 )}
                 {/* Reply to Cosmo input */}
                 <div className="mt-4 flex gap-2">
-                  <input
+                  <Input
                     type="text"
                     value={inboxReplyInput}
                     onChange={(e) => setInboxReplyInput(e.target.value)}
                     placeholder="Reply to Cosmo..."
                     aria-label="Reply to Cosmo"
-                    className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-blue-500 focus:outline-none"
+                    className="flex-1 px-4 py-2 placeholder:text-zinc-600"
                     disabled={!agents.some((a) => a.role === "project_orchestrator" && a.status !== "terminated" && a.status !== "complete")}
                     onKeyDown={(e) => {
                       if (e.key === "Enter") handleInboxReply();
@@ -1101,7 +1092,7 @@ export default function ProjectDetailPage() {
                 <div ref={chatEndRef} />
               </div>
               <div className="flex gap-2">
-                <input
+                <Input
                   type="text"
                   value={chatInput}
                   onChange={(e) => setChatInput(e.target.value)}
@@ -1111,7 +1102,7 @@ export default function ProjectDetailPage() {
                       : "Send a message to interact with agents..."
                   }
                   aria-label="Send message to agent"
-                  className="flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-4 py-2 text-sm text-white placeholder:text-zinc-600 focus:border-blue-500 focus:outline-none"
+                  className="flex-1 px-4 py-2 placeholder:text-zinc-600"
                   disabled={activeAgents.length === 0}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") handleSendChat();

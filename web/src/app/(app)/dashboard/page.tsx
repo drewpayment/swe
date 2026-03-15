@@ -17,29 +17,8 @@ import {
 import Link from "next/link";
 import { listProjects, listAgents, listArtifacts, checkHealth } from "@/lib/api";
 import type { Project, Agent, Artifact, ProjectPhase } from "@/lib/types";
-
-const phaseVariant = {
-  planning: "info" as const,
-  designing: "info" as const,
-  building: "warning" as const,
-  testing: "warning" as const,
-  deploying: "warning" as const,
-  complete: "success" as const,
-  archived: "default" as const,
-};
-
-function timeAgo(dateStr: string): string {
-  const date = new Date(dateStr);
-  const now = new Date();
-  const diffMs = now.getTime() - date.getTime();
-  const diffMins = Math.floor(diffMs / 60000);
-  if (diffMins < 1) return "just now";
-  if (diffMins < 60) return `${diffMins}m ago`;
-  const diffHours = Math.floor(diffMins / 60);
-  if (diffHours < 24) return `${diffHours}h ago`;
-  const diffDays = Math.floor(diffHours / 24);
-  return `${diffDays}d ago`;
-}
+import { PHASE_VARIANT } from "@/lib/types";
+import { timeAgo } from "@/lib/utils";
 
 export default function DashboardPage() {
   const [projects, setProjects] = useState<Project[]>([]);
@@ -196,7 +175,7 @@ export default function DashboardPage() {
                         </div>
                       </div>
                       <div className="flex items-center gap-3">
-                        <Badge variant={phaseVariant[project.phase as ProjectPhase] ?? "default"}>
+                        <Badge variant={PHASE_VARIANT[project.phase as ProjectPhase] ?? "default"}>
                           {project.phase}
                         </Badge>
                         <div className="flex items-center gap-1 text-xs text-zinc-500">

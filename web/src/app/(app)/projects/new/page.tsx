@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ArrowLeft, Loader2, Globe, FolderOpen, Clock } from "lucide-react";
 import Link from "next/link";
 import { createProject } from "@/lib/api";
+import { Input, Textarea } from "@/components/ui/input";
 
 type RepoSource = "remote" | "local" | "later";
 
@@ -55,9 +56,6 @@ export default function NewProjectPage() {
     }
   }
 
-  const inputClass =
-    "w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white placeholder:text-zinc-500 focus:border-blue-500 focus:outline-none";
-
   const repoSourceOptions: { value: RepoSource; label: string; icon: typeof Globe }[] = [
     { value: "remote", label: "Remote Repository", icon: Globe },
     { value: "local", label: "Local Directory", icon: FolderOpen },
@@ -90,7 +88,7 @@ export default function NewProjectPage() {
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">
                 Name <span className="text-red-400">*</span>
               </label>
-              <input
+              <Input
                 type="text"
                 value={name}
                 onChange={(e) => {
@@ -98,7 +96,6 @@ export default function NewProjectPage() {
                   if (e.target.value.trim()) setNameError(null);
                 }}
                 placeholder="My Project"
-                className={inputClass}
                 aria-describedby={nameError ? "name-error" : undefined}
                 aria-invalid={nameError ? true : undefined}
                 required
@@ -114,12 +111,11 @@ export default function NewProjectPage() {
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">
                 Description
               </label>
-              <textarea
+              <Textarea
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
                 placeholder="What does this project do?"
                 rows={3}
-                className={inputClass + " resize-none"}
               />
             </div>
 
@@ -152,12 +148,11 @@ export default function NewProjectPage() {
                 <label className="block text-sm font-medium text-zinc-300 mb-1.5">
                   Repository URL
                 </label>
-                <input
+                <Input
                   type="url"
                   value={repoUrl}
                   onChange={(e) => setRepoUrl(e.target.value)}
                   placeholder="https://github.com/org/repo"
-                  className={inputClass}
                 />
               </div>
             )}
@@ -167,12 +162,11 @@ export default function NewProjectPage() {
                 <label className="block text-sm font-medium text-zinc-300 mb-1.5">
                   Local Directory Path
                 </label>
-                <input
+                <Input
                   type="text"
                   value={workingDirectory}
                   onChange={(e) => setWorkingDirectory(e.target.value)}
                   placeholder="~/dev/my-project"
-                  className={inputClass}
                 />
               </div>
             )}
@@ -181,12 +175,11 @@ export default function NewProjectPage() {
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">
                 Initial Prompt
               </label>
-              <textarea
+              <Textarea
                 value={initialPrompt}
                 onChange={(e) => setInitialPrompt(e.target.value)}
                 placeholder="Describe what you want the agents to build..."
                 rows={5}
-                className={inputClass + " resize-none"}
               />
             </div>
 

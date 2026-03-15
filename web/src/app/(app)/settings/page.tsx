@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Save, RefreshCw, Loader2, AlertCircle, Check } from "lucide-react";
 import { getSettings, updateSettings, checkServiceHealth } from "@/lib/api";
 import type { Settings } from "@/lib/types";
+import { Input, Select } from "@/components/ui/input";
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Settings | null>(null);
@@ -123,9 +124,6 @@ export default function SettingsPage() {
     );
   }
 
-  const inputClass =
-    "w-full rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-2 text-sm text-white focus:border-blue-500 focus:outline-none";
-
   const roles = [
     { key: "orchestrator", label: "Orchestrator" },
     { key: "architect", label: "Architect" },
@@ -153,14 +151,13 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-zinc-300 mb-1.5">
               LiteLLM Proxy URL
             </label>
-            <input
+            <Input
               type="text"
               value={settings.llm.proxy_url}
               onChange={(e) => updateLlm("proxy_url", e.target.value)}
               onBlur={(e) => validateProxyUrl(e.target.value)}
               aria-describedby={proxyUrlError ? "proxy-url-error" : undefined}
               aria-invalid={proxyUrlError ? true : undefined}
-              className={inputClass}
             />
             {proxyUrlError && (
               <p id="proxy-url-error" className="mt-1 text-sm text-red-400">
@@ -172,15 +169,14 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-zinc-300 mb-1.5">
               Default Model
             </label>
-            <select
+            <Select
               value={settings.llm.default_model}
               onChange={(e) => updateLlm("default_model", e.target.value)}
-              className={inputClass}
             >
               <option value="gpt-4o">gpt-4o</option>
               <option value="claude-sonnet-4">claude-sonnet-4</option>
               <option value="gemini-2.5-pro">gemini-2.5-pro</option>
-            </select>
+            </Select>
           </div>
           <div>
             <label className="block text-sm font-medium text-zinc-300 mb-2">
@@ -190,16 +186,16 @@ export default function SettingsPage() {
               {roles.map((r) => (
                 <div key={r.key} className="flex items-center gap-3">
                   <span className="text-sm text-zinc-400 w-32">{r.label}</span>
-                  <select
+                  <Select
                     value={settings.llm.role_models[r.key] || ""}
                     onChange={(e) => updateRoleModel(r.key, e.target.value)}
-                    className={"flex-1 rounded-lg border border-zinc-800 bg-zinc-900 px-3 py-1.5 text-sm text-white focus:border-blue-500 focus:outline-none"}
+                    className="flex-1 py-1.5"
                   >
                     <option value="">Use default</option>
                     <option value="gpt-4o">gpt-4o</option>
                     <option value="claude-sonnet-4">claude-sonnet-4</option>
                     <option value="gemini-2.5-pro">gemini-2.5-pro</option>
-                  </select>
+                  </Select>
                 </div>
               ))}
             </div>
@@ -218,11 +214,10 @@ export default function SettingsPage() {
             <label className="block text-sm font-medium text-zinc-300 mb-1.5">
               Sandbox Namespace
             </label>
-            <input
+            <Input
               type="text"
               value={settings.kubernetes.sandbox_namespace}
               onChange={(e) => updateK8s("sandbox_namespace", e.target.value)}
-              className={inputClass}
             />
           </div>
           <div className="grid grid-cols-2 gap-4">
@@ -230,22 +225,20 @@ export default function SettingsPage() {
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">
                 Default CPU Limit
               </label>
-              <input
+              <Input
                 type="text"
                 value={settings.kubernetes.default_cpu_limit}
                 onChange={(e) => updateK8s("default_cpu_limit", e.target.value)}
-                className={inputClass}
               />
             </div>
             <div>
               <label className="block text-sm font-medium text-zinc-300 mb-1.5">
                 Default Memory Limit
               </label>
-              <input
+              <Input
                 type="text"
                 value={settings.kubernetes.default_memory_limit}
                 onChange={(e) => updateK8s("default_memory_limit", e.target.value)}
-                className={inputClass}
               />
             </div>
           </div>

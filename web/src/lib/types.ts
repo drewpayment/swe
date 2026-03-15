@@ -201,6 +201,16 @@ export const PHASE_LABEL: Record<ProjectPhase, string> = {
   archived: "Archived",
 };
 
+export const PHASE_VARIANT: Record<ProjectPhase, "info" | "warning" | "success" | "default"> = {
+  planning: "info",
+  designing: "info",
+  building: "warning",
+  testing: "warning",
+  deploying: "warning",
+  complete: "success",
+  archived: "default",
+};
+
 export const STATUS_COLOR: Record<AgentStatus, string> = {
   initializing: "text-yellow-500",
   idle: "text-gray-400",
