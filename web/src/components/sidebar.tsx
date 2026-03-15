@@ -127,13 +127,11 @@ export function Sidebar({ connected, events }: SidebarProps) {
           onClick={() => setBellOpen((prev) => !prev)}
           aria-label="Notifications"
           aria-expanded={bellOpen}
+          aria-haspopup="listbox"
           className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-400 hover:bg-zinc-900 hover:text-white transition-colors"
         >
           <div className="relative">
             <Bell className="h-4 w-4" />
-            <span aria-live="polite" aria-atomic="true" className="sr-only">
-              {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}` : ""}
-            </span>
             {unreadCount > 0 && (
               <span
                 aria-hidden="true"
@@ -145,6 +143,9 @@ export function Sidebar({ connected, events }: SidebarProps) {
           </div>
           Notifications
         </button>
+        <span aria-live="polite" aria-atomic="true" className="sr-only">
+          {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}` : ""}
+        </span>
 
         {bellOpen && (
           <div className="absolute left-2 right-2 top-full z-50 mt-1 max-h-96 overflow-y-auto rounded-lg border border-zinc-700 bg-zinc-900 shadow-xl">

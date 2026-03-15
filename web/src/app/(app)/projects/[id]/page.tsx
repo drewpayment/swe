@@ -483,9 +483,9 @@ export default function ProjectDetailPage() {
                 className="h-6 w-6 p-0"
                 onClick={() => setShowSpawnMenu(!showSpawnMenu)}
                 disabled={spawning}
-                title="Add agent"
                 aria-label="Add agent"
                 aria-expanded={showSpawnMenu}
+                aria-haspopup="menu"
               >
                 {spawning ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin" />
@@ -530,11 +530,9 @@ export default function ProjectDetailPage() {
                           {ROLE_EMOJI[agent.role] ?? "🤖"}
                         </span>
                         <span
+                          aria-hidden="true"
                           className={`absolute -bottom-0.5 -right-0.5 h-2 w-2 rounded-full border border-zinc-900 ${statusIndicator(agent.status)}`}
-                          title={agent.status.replace(/_/g, " ")}
-                        >
-                          <span className="sr-only">{agent.status.replace(/_/g, " ")}</span>
-                        </span>
+                        />
                       </div>
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-medium text-white truncate">
@@ -615,8 +613,10 @@ export default function ProjectDetailPage() {
             {(["board", "inbox", "chat"] as const).map((tab) => (
               <button
                 key={tab}
+                id={`tab-${tab}`}
                 role="tab"
                 aria-selected={activeTab === tab}
+                aria-controls={`tabpanel-${tab}`}
                 onClick={() => setActiveTab(tab)}
                 className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
                   activeTab === tab
@@ -643,7 +643,7 @@ export default function ProjectDetailPage() {
 
           {/* Board Tab */}
           {activeTab === "board" && (
-          <>
+          <div role="tabpanel" id="tabpanel-board" aria-labelledby="tab-board">
           {/* Work Items — Kanban */}
           <Card>
             <CardHeader>
@@ -821,12 +821,12 @@ export default function ProjectDetailPage() {
             </Card>
           )}
 
-          </>
+          </div>
           )}
 
           {/* Inbox Tab */}
           {activeTab === "inbox" && (
-            <Card>
+            <Card role="tabpanel" id="tabpanel-inbox" aria-labelledby="tab-inbox">
               <CardHeader>
                 <div className="flex items-center justify-between">
                   <CardTitle className="text-base">
@@ -954,7 +954,7 @@ export default function ProjectDetailPage() {
 
           {/* Chat Tab */}
           {activeTab === "chat" && (
-          <Card>
+          <Card role="tabpanel" id="tabpanel-chat" aria-labelledby="tab-chat">
             <CardHeader>
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base">Activity Feed</CardTitle>
