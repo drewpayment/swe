@@ -129,3 +129,29 @@ In `proto/swe/v1/`: project.proto, agent.proto, work.proto, events.proto. gRPC c
 
 ### Go Dockerfile
 Multi-stage build. `golang:1.25-bookworm` builder, `debian:bookworm-slim` runtime. CGO_ENABLED=0 for static binaries. Three runtime targets: `api`, `cli`, `worker`.
+
+## Design Context
+
+### Users
+Mixed technical audience — developers, tech leads, and engineering managers using the platform to orchestrate AI agents for software engineering tasks. Devs interact directly with agents and artifacts; managers track progress and outcomes. All users expect a tool that feels as polished as the developer tools they already use.
+
+### Brand Personality
+**Bold, fast, powerful.** SWE is a high-performance platform that makes teams feel like they have superpowers. The interface should project confidence and convey that serious work is happening behind the scenes — not a toy, not a chatbot wrapper.
+
+### Aesthetic Direction
+- **References**: Linear and Vercel — clean, fast, dark-mode-first developer tools with polished micro-interactions and premium feel
+- **Anti-references**: Generic admin panels, Bootstrap templates, basic dashboards — avoid anything that looks templated or low-effort
+- **Theme**: Dark + light mode support (currently dark-only — light mode planned)
+- **Current stack**: Next.js 16, React 19, Tailwind v4, Inter font, Lucide icons, custom component library (button, card, badge)
+- **Color system**: Zinc-based neutrals, blue primary accent, semantic colors (green/success, red/error, yellow/warning, purple/review)
+
+### Emotional Goals
+- **Confidence & control**: Users feel in command of powerful AI agents doing real work
+- **Trust & reliability**: Users trust the system is working correctly even when they're not watching
+
+### Design Principles
+1. **Command, not conversation** — This is a control plane for orchestrating agents, not a chat interface. Every screen should feel like a cockpit: information-dense, status-rich, and action-oriented.
+2. **Earn trust through transparency** — Show real-time agent status, clear progress indicators, and honest error states. Never hide what's happening. Status should be glanceable and unambiguous.
+3. **Fast by default** — Interactions should feel instant. Favor optimistic UI, smooth transitions, and responsive layouts. Performance is a feature.
+4. **Dense but not cluttered** — Pack information efficiently without overwhelming. Use typography hierarchy, color-coding, and spatial grouping to make density feel organized, not chaotic.
+5. **Polish the details** — Consistent spacing, aligned elements, thoughtful hover states, and subtle animations separate a premium tool from a prototype. Every pixel should feel intentional.
