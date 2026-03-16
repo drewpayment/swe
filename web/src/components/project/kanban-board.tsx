@@ -1,7 +1,6 @@
 "use client";
 
 import { memo } from "react";
-import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ROLE_EMOJI } from "@/lib/types";
 import type { Agent, WorkItem, WorkItemStatus } from "@/lib/types";
@@ -59,9 +58,12 @@ const priorityColor = (p: string) => {
   }
 };
 
-const KANBAN_COLUMNS: { key: WorkItemStatus; label: string; color: string }[] = [
+const KANBAN_ROW_1: { key: WorkItemStatus; label: string; color: string }[] = [
   { key: "pending", label: "Backlog", color: "border-zinc-700" },
   { key: "assigned", label: "Assigned", color: "border-yellow-700" },
+];
+
+const KANBAN_ROW_2: { key: WorkItemStatus; label: string; color: string }[] = [
   { key: "in_progress", label: "In Progress", color: "border-blue-700" },
   { key: "in_review", label: "Review", color: "border-purple-700" },
   { key: "complete", label: "Done", color: "border-green-700" },
@@ -80,9 +82,58 @@ export const KanbanBoard = memo(function KanbanBoard({
   viewMode,
   onViewModeChange,
 }: KanbanBoardProps) {
+  function renderColumn(col: { key: WorkItemStatus; label: string; color: string }) {
+    const items = workItems.filter((w) => w.status === col.key);
+    return (
+      <div
+        key={col.key}
+        className={`flex-1 min-w-0 rounded-lg border ${col.color} bg-zinc-50/50 dark:bg-zinc-900/50 p-2`}
+      >
+        <div className="flex items-center justify-between mb-2 px-1">
+          <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
+            {col.label}
+          </span>
+          <span className="text-xs text-zinc-400 dark:text-zinc-600">
+            {items.length}
+          </span>
+        </div>
+        <div className="space-y-1.5">
+          {items.map((item) => (
+            <div
+              key={item.id}
+              className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2 min-h-[44px] hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+            >
+              <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300 leading-snug">
+                {item.title}
+              </p>
+              <div className="flex items-center justify-between mt-1.5">
+                <span
+                  className={`text-[10px] uppercase font-medium ${priorityColor(item.priority)}`}
+                >
+                  {item.priority}
+                </span>
+                {item.assigned_agent_id && (
+                  <span className="text-[10px] text-zinc-400 dark:text-zinc-600">
+                    {ROLE_EMOJI[agents.find((a) => a.id === item.assigned_agent_id)?.role ?? "coder"] ?? "🤖"}
+                  </span>
+                )}
+              </div>
+            </div>
+          ))}
+          {items.length === 0 && (
+            <p className="text-[10px] text-zinc-400 dark:text-zinc-700 text-center py-3">
+              —
+            </p>
+          )}
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <Card>
-      <div className="flex items-center justify-end px-4 pt-3 pb-1">
+    <div className="p-4 space-y-3">
+      {/* View toggle */}
+      <div className="flex items-center justify-end">
         <div className="flex items-center gap-1 rounded-lg bg-zinc-100/50 dark:bg-zinc-800/50 p-0.5">
           <button
             onClick={() => onViewModeChange("kanban")}
@@ -106,103 +157,63 @@ export const KanbanBoard = memo(function KanbanBoard({
           </button>
         </div>
       </div>
-      <CardContent>
-        {workItems.length === 0 ? (
-          <div className="text-center py-8">
-            <Clock className="h-8 w-8 text-zinc-400 dark:text-zinc-700 mx-auto mb-2" />
-            <p className="text-sm text-zinc-500">
-              Waiting for orchestrator to create work items...
-            </p>
-            <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-1">
-              The project orchestrator will analyze your brief and create tasks
-            </p>
+
+      {workItems.length === 0 ? (
+        <div className="text-center py-8">
+          <Clock className="h-8 w-8 text-zinc-400 dark:text-zinc-700 mx-auto mb-2" />
+          <p className="text-sm text-zinc-500">
+            Waiting for orchestrator to create work items...
+          </p>
+          <p className="text-xs text-zinc-400 dark:text-zinc-600 mt-1">
+            The project orchestrator will analyze your brief and create tasks
+          </p>
+        </div>
+      ) : viewMode === "kanban" ? (
+        <div className="space-y-3">
+          {/* Row 1: Backlog + Assigned */}
+          <div className="flex gap-3">
+            {KANBAN_ROW_1.map(renderColumn)}
           </div>
-        ) : viewMode === "kanban" ? (
-          <div className="flex flex-col gap-3 md:flex-row md:overflow-x-auto pb-2">
-            {KANBAN_COLUMNS.map((col) => {
-              const items = workItems.filter((w) => w.status === col.key);
-              return (
-                <div
-                  key={col.key}
-                  className={`flex-1 md:min-w-[160px] rounded-lg border ${col.color} bg-zinc-50/50 dark:bg-zinc-900/50 p-2`}
-                >
-                  <div className="flex items-center justify-between mb-2 px-1">
-                    <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
-                      {col.label}
-                    </span>
-                    <span className="text-xs text-zinc-400 dark:text-zinc-600">
-                      {items.length}
-                    </span>
-                  </div>
-                  <div className="space-y-1.5">
-                    {items.map((item) => (
-                      <div
-                        key={item.id}
-                        className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2 min-h-[44px] hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
-                      >
-                        <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300 leading-snug">
-                          {item.title}
-                        </p>
-                        <div className="flex items-center justify-between mt-1.5">
-                          <span
-                            className={`text-[10px] uppercase font-medium ${priorityColor(item.priority)}`}
-                          >
-                            {item.priority}
-                          </span>
-                          {item.assigned_agent_id && (
-                            <span className="text-[10px] text-zinc-400 dark:text-zinc-600">
-                              {ROLE_EMOJI[agents.find((a) => a.id === item.assigned_agent_id)?.role ?? "coder"] ?? "🤖"}
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                    ))}
-                    {items.length === 0 && (
-                      <p className="text-[10px] text-zinc-400 dark:text-zinc-700 text-center py-3">
-                        —
-                      </p>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+          {/* Row 2: In Progress + Review + Done */}
+          <div className="flex gap-3">
+            {KANBAN_ROW_2.map(renderColumn)}
           </div>
-        ) : (
-          <div className="space-y-2">
-            {workItems.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center gap-3 rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
-              >
-                {workItemStatusIcon(item.status)}
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
-                    {item.title}
+        </div>
+      ) : (
+        <div className="space-y-2">
+          {workItems.map((item) => (
+            <div
+              key={item.id}
+              className="flex items-center gap-3 rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+            >
+              {workItemStatusIcon(item.status)}
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-zinc-700 dark:text-zinc-300 truncate">
+                  {item.title}
+                </p>
+                {item.description && (
+                  <p className="text-xs text-zinc-400 dark:text-zinc-600 truncate mt-0.5">
+                    {item.description}
                   </p>
-                  {item.description && (
-                    <p className="text-xs text-zinc-400 dark:text-zinc-600 truncate mt-0.5">
-                      {item.description}
-                    </p>
-                  )}
-                </div>
-                <span
-                  className={`text-[10px] uppercase font-medium ${priorityColor(item.priority)}`}
-                >
-                  {item.priority}
-                </span>
-                {item.assigned_agent_id && (
-                  <span className="text-xs text-zinc-400 dark:text-zinc-600">
-                    {ROLE_EMOJI[agents.find((a) => a.id === item.assigned_agent_id)?.role ?? "coder"]}
-                  </span>
                 )}
-                <Badge variant={workItemStatusBadge(item.status)}>
-                  {item.status.replace(/_/g, " ")}
-                </Badge>
               </div>
-            ))}
-          </div>
-        )}
-      </CardContent>
-    </Card>
+              <span
+                className={`text-[10px] uppercase font-medium ${priorityColor(item.priority)}`}
+              >
+                {item.priority}
+              </span>
+              {item.assigned_agent_id && (
+                <span className="text-xs text-zinc-400 dark:text-zinc-600">
+                  {ROLE_EMOJI[agents.find((a) => a.id === item.assigned_agent_id)?.role ?? "coder"]}
+                </span>
+              )}
+              <Badge variant={workItemStatusBadge(item.status)}>
+                {item.status.replace(/_/g, " ")}
+              </Badge>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 });
