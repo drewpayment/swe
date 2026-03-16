@@ -41,3 +41,11 @@ config/litellm.yaml
 
 # Worktrees
 .worktrees/
+
+# Worker (host mode)
+bin/
+logs/
+.worker.pid
+
+# Superpowers
+.superpowers/

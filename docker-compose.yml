@@ -132,25 +132,30 @@ services:
       - swe-net
 
   # ─── SWE Worker ──────────────────────────────────────
-  swe-worker:
-    build:
-      context: .
-      dockerfile: Dockerfile
-      target: worker
-    environment:
-      - DATABASE_URL=postgres://swe:swe@postgres:5432/swe?sslmode=disable
-      - TEMPORAL_ADDRESS=temporal:7233
-      - LITELLM_URL=http://litellm:4000
-      - LITELLM_API_KEY=sk-swe-dev-key
-      - REDIS_URL=redis://redis:6379
-      - API_INTERNAL_URL=http://swe-api:8080
-    depends_on:
-      swe-migrate:
-        condition: service_completed_successfully
-      temporal:
-        condition: service_started
-    networks:
-      - swe-net
+  # NOTE: The worker runs on the HOST (not Docker) so it can spawn OpenCode
+  # processes and access local project directories. Start it with:
+  #   ./scripts/worker-start.sh
+  #
+  # The Dockerized worker is kept here commented out for reference.
+  # swe-worker:
+  #   build:
+  #     context: .
+  #     dockerfile: Dockerfile
+  #     target: worker
+  #   environment:
+  #     - DATABASE_URL=postgres://swe:swe@postgres:5432/swe?sslmode=disable
+  #     - TEMPORAL_ADDRESS=temporal:7233
+  #     - LITELLM_URL=http://litellm:4000
+  #     - LITELLM_API_KEY=sk-swe-dev-key
+  #     - REDIS_URL=redis://redis:6379
+  #     - API_INTERNAL_URL=http://swe-api:8080
+  #   depends_on:
+  #     swe-migrate:
+  #       condition: service_completed_successfully
+  #     temporal:
+  #       condition: service_started
+  #   networks:
+  #     - swe-net
 
   # ─── SWE Web UI ──────────────────────────────────────
   swe-web:

@@ -91,26 +91,68 @@ swe/
 
 ### Prerequisites
 
-- Rust (stable)
+- Go 1.25+
 - Docker / OrbStack
-- Bun (or Node.js 22+)
-- Temporal CLI (optional, for local dev server)
+- Bun (for web UI)
+- [OpenCode](https://github.com/opencode-ai/opencode) (`bun install -g opencode`) — required for agent code execution
 
-### Build
+### Getting Started
 
 ```bash
-# Build all Rust crates
-cargo build
-
-# Run tests
-cargo test
-
-# Build the CLI
-cargo build -p swe-cli --release
-
-# Start dev infrastructure
+# 1. Start infrastructure (Temporal, Postgres, Redis, LiteLLM, API, Web UI)
 docker compose up -d
+
+# 2. Start the Temporal worker on the host
+./scripts/worker-start.sh
 ```
+
+The worker runs on the **host** (not Docker) so it can spawn OpenCode processes and access local project directories. This is required for agents to write code to your filesystem.
+
+### Worker Management
+
+```bash
+# Start worker in foreground (see logs, Ctrl+C to stop)
+./scripts/worker-start.sh
+
+# Start worker in background
+./scripts/worker-start.sh --background
+
+# Stop background worker
+./scripts/worker-stop.sh
+```
+
+The worker connects to Docker services on localhost (Temporal :7233, Postgres :5432, Redis :6379, LiteLLM :4000, API :8080). Override with env vars if needed:
+
+```bash
+DATABASE_URL=postgres://... TEMPORAL_ADDRESS=... ./scripts/worker-start.sh
+```
+
+### Build Commands
+
+```bash
+# Go
+go build ./...                     # Build all packages
+go test ./...                      # Run all tests
+go build ./cmd/api/                # Build API server
+go build ./cmd/worker/             # Build Temporal worker
+
+# Web UI
+cd web && bun install && bun run dev   # Dev server on :3000
+cd web && bun run build                # Production build
+```
+
+### Docker (full stack minus worker)
+
+```bash
+docker compose up -d                 # Start all services
+docker compose up -d --build swe-web # Rebuild + restart web UI
+docker compose logs -f swe-api       # Tail API logs
+docker compose down                  # Stop everything
+```
+
+### LiteLLM Setup
+
+Copy `config/litellm.example.yaml` to `config/litellm.yaml` and add your API keys before starting Docker.
 
 ## License
 
