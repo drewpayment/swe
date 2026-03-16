@@ -3,7 +3,7 @@
 import { useEffect, useRef, useState, useCallback, useMemo } from "react";
 import { useParams } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
-import { ROLE_LABEL, PHASE_LABEL, PHASE_VARIANT } from "@/lib/types";
+import { PHASE_LABEL, PHASE_VARIANT } from "@/lib/types";
 import type {
   ChatMessage,
   Notification,
@@ -15,7 +15,6 @@ import type {
 } from "@/lib/types";
 import {
   AlertCircle,
-  Inbox,
   ExternalLink,
   Folder,
   AlertTriangle,
@@ -34,11 +33,11 @@ import {
   markAllNotificationsRead,
 } from "@/lib/api";
 import { useWebSocket } from "@/lib/ws";
-import { AgentsSidebar } from "@/components/project/agents-sidebar";
 import { KanbanBoard } from "@/components/project/kanban-board";
 import { ArtifactsPanel } from "@/components/project/artifacts-panel";
-import { ChatPanel } from "@/components/project/chat-panel";
-import type { ChatMessage as ChatPanelMessage } from "@/components/project/chat-panel";
+import { CosmoChatPanel } from "@/components/project/cosmo-chat-panel";
+import type { ChatPanelMessage, AgentActivity } from "@/components/project/cosmo-chat-panel";
+import { AgentAvatars } from "@/components/project/agent-avatars";
 import { InboxPanel } from "@/components/project/inbox-panel";
 
 export default function ProjectDetailPage() {
@@ -53,9 +52,9 @@ export default function ProjectDetailPage() {
   const [chatSending, setChatSending] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatPanelMessage[]>([]);
-  const [targetAgentId, setTargetAgentId] = useState<string>("");
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
-  const [activeTab, setActiveTab] = useState<"board" | "inbox" | "chat">("board");
+  const [boardTab, setBoardTab] = useState<"board" | "inbox">("board");
+  const [activities, setActivities] = useState<AgentActivity[]>([]);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [inboxReplyInput, setInboxReplyInput] = useState("");
@@ -66,11 +65,6 @@ export default function ProjectDetailPage() {
 
   const projectId = typeof id === "string" ? id : Array.isArray(id) ? id[0] : "";
 
-  const activeAgents = useMemo(
-    () => agents.filter((a) => a.status !== "terminated" && a.status !== "complete"),
-    [agents]
-  );
-
   const completedCount = useMemo(
     () => workItems.filter((w) => w.status === "complete").length,
     [workItems]
@@ -80,6 +74,8 @@ export default function ProjectDetailPage() {
     () => (totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0),
     [completedCount, totalCount]
   );
+
+  const orchestrator = agents.find((a) => a.role === "project_orchestrator") ?? null;
 
   const refreshAll = useCallback(async () => {
     if (!projectId) return;
@@ -120,17 +116,6 @@ export default function ProjectDetailPage() {
           );
         }
 
-        // Set default target agent
-        const agentRes = await listAgents(projectId);
-        if (agentRes.success && agentRes.data) {
-          const active = agentRes.data.filter(
-            (a) => a.status !== "terminated" && a.status !== "complete"
-          );
-          const orch = active.find((a) => a.role === "project_orchestrator");
-          if ((orch || active[0]) && !targetAgentId) {
-            setTargetAgentId((orch || active[0]).id);
-          }
-        }
       } catch {
         setError("Failed to connect to the API");
       } finally {
@@ -167,6 +152,28 @@ export default function ProjectDetailPage() {
     if (refreshTypes.includes(latest.type)) {
       refreshAll();
     }
+
+    // Build activity from agent_status and work_item_update events
+    if (latest.type === "agent_status" || latest.type === "work_item_update") {
+      const agent = agents.find((a) => a.id === latest.agent_id);
+      if (agent) {
+        const action = latest.type === "agent_status"
+          ? (latest.status as string) ?? "updated"
+          : (latest.action as string) ?? "updated";
+        const target = (latest.work_item_title as string) ?? (latest.name as string) ?? "";
+        if (target) {
+          setActivities((prev) => [
+            ...prev.slice(-19),
+            {
+              agentRole: agent.role,
+              action,
+              target,
+              timestamp: new Date().toISOString(),
+            },
+          ]);
+        }
+      }
+    }
   }, [events, projectId, refreshAll]);
 
   // Periodic refresh every 15s for autonomous updates
@@ -184,13 +191,13 @@ export default function ProjectDetailPage() {
   }, [projectId]);
 
   useEffect(() => {
-    if (activeTab === "inbox") {
+    if (boardTab === "inbox") {
       setNotificationsLoading(true);
       fetchNotifications().finally(() => setNotificationsLoading(false));
       const interval = setInterval(fetchNotifications, 15000);
       return () => clearInterval(interval);
     }
-  }, [activeTab, fetchNotifications]);
+  }, [boardTab, fetchNotifications]);
 
   async function handleMarkRead(notifId: string) {
     // Optimistically update local state immediately
@@ -239,21 +246,21 @@ export default function ProjectDetailPage() {
 
   async function handleSendChat() {
     if (!chatInput.trim() || chatSending) return;
-    if (!targetAgentId) {
-      setChatError("No agents available to message");
+    const targetId = orchestrator?.id;
+    if (!targetId) {
+      setChatError("No active orchestrator to message");
       return;
     }
     setChatSending(true);
     setChatError(null);
     const msg = chatInput.trim();
-    const res = await sendMessage(targetAgentId, msg);
+    const res = await sendMessage(targetId, msg);
     setChatSending(false);
     if (res.success) {
-      const agent = activeAgents.find((a) => a.id === targetAgentId);
       setChatMessages((prev) => [
         ...prev,
         {
-          from: "You → " + (agent ? ROLE_LABEL[agent.role] ?? agent.name : "Agent"),
+          from: "You → Cosmo",
           content: msg,
           time: new Date().toLocaleTimeString(),
           role: "user",
@@ -262,15 +269,6 @@ export default function ProjectDetailPage() {
       setChatInput("");
     } else {
       setChatError(res.error || "Failed to send message");
-    }
-  }
-
-  function handleAgentDeleted(agentId: string) {
-    if (targetAgentId === agentId) {
-      const active = agents.filter(
-        (a) => a.status !== "terminated" && a.status !== "complete" && a.id !== agentId
-      );
-      setTargetAgentId(active[0]?.id || "");
     }
   }
 
@@ -323,7 +321,7 @@ export default function ProjectDetailPage() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex flex-col h-full gap-4">
       {/* Header */}
       <section aria-label="Project overview">
       <div className="flex items-center justify-between">
@@ -374,103 +372,91 @@ export default function ProjectDetailPage() {
       </div>
       </section>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
-        {/* Agents Sidebar */}
-        <AgentsSidebar
-          agents={agents}
-          workItems={workItems}
-          projectId={projectId}
-          onRefresh={refreshAll}
-          onAgentDeleted={handleAgentDeleted}
+      {/* Two-panel layout: Chat + Board */}
+      <div className="flex gap-4 flex-1 min-h-0">
+        {/* Left: Cosmo Chat Panel */}
+        <CosmoChatPanel
+          messages={chatMessages}
+          activities={activities}
+          orchestrator={orchestrator}
+          chatInput={chatInput}
+          onChatInputChange={setChatInput}
+          onSendMessage={handleSendChat}
+          sending={chatSending}
+          error={chatError}
         />
 
-        {/* Main Content */}
-        <section aria-label="Project content" className="lg:col-span-9 space-y-6">
-          {/* Tab Switcher */}
-          <div role="tablist" className="flex gap-1 border-b border-zinc-200 dark:border-zinc-800 pb-0">
-            {(["board", "inbox", "chat"] as const).map((tab) => (
+        {/* Right: Board Panel */}
+        <div className="flex-1 flex flex-col bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden min-w-0">
+          {/* Board Header: Tabs + Agent Avatars */}
+          <div className="flex items-center justify-between px-4 py-3 border-b border-zinc-200 dark:border-zinc-800">
+            <div className="flex items-center gap-4">
               <button
-                key={tab}
-                id={`tab-${tab}`}
-                role="tab"
-                aria-selected={activeTab === tab}
-                aria-controls={`tabpanel-${tab}`}
-                onClick={() => setActiveTab(tab)}
-                className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
-                  activeTab === tab
-                    ? "border-blue-500 text-zinc-900 dark:text-white"
-                    : "border-transparent text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-300"
+                onClick={() => setBoardTab("board")}
+                className={`text-[13px] font-medium pb-0.5 transition-colors ${
+                  boardTab === "board"
+                    ? "text-zinc-900 dark:text-zinc-100 border-b-2 border-blue-500"
+                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-400"
                 }`}
               >
-                {tab === "board" && "Board"}
-                {tab === "inbox" && (
-                  <span className="flex items-center gap-1.5">
-                    <Inbox className="h-3.5 w-3.5" />
-                    Inbox
-                    {notifications.filter((n) => !n.read).length > 0 && (
-                      <span className="ml-1 inline-flex items-center justify-center h-4 min-w-[16px] rounded-full bg-blue-600 text-[10px] text-white px-1">
-                        {notifications.filter((n) => !n.read).length}
-                      </span>
-                    )}
-                  </span>
-                )}
-                {tab === "chat" && "Chat"}
+                Board
               </button>
-            ))}
+              <button
+                onClick={() => setBoardTab("inbox")}
+                className={`text-[13px] font-medium pb-0.5 transition-colors relative ${
+                  boardTab === "inbox"
+                    ? "text-zinc-900 dark:text-zinc-100 border-b-2 border-blue-500"
+                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-400"
+                }`}
+              >
+                Inbox
+                {notifications.filter((n) => !n.read).length > 0 && (
+                  <span className="absolute -top-1 -right-3 w-2 h-2 rounded-full bg-blue-500" />
+                )}
+              </button>
+            </div>
+
+            <AgentAvatars
+              agents={agents}
+              projectId={projectId}
+              onRefresh={refreshAll}
+            />
           </div>
 
-          {/* Board Tab */}
-          {activeTab === "board" && (
-            <div key="board" className="animate-tab-enter" role="tabpanel" id="tabpanel-board" aria-labelledby="tab-board">
-              <KanbanBoard
-                workItems={workItems}
-                agents={agents}
-                viewMode={viewMode}
-                onViewModeChange={setViewMode}
-              />
-              <div className="mt-6">
+          {/* Board Content */}
+          <div className="flex-1 overflow-y-auto">
+            {boardTab === "board" && (
+              <div className="animate-tab-enter">
+                <KanbanBoard
+                  workItems={workItems}
+                  agents={agents}
+                  viewMode={viewMode}
+                  onViewModeChange={setViewMode}
+                />
                 <ArtifactsPanel artifacts={artifacts} />
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Inbox Tab */}
-          {activeTab === "inbox" && (
-            <div key="inbox" className="animate-tab-enter" role="tabpanel" id="tabpanel-inbox" aria-labelledby="tab-inbox">
-              <InboxPanel
-                notifications={notifications}
-                agents={agents}
-                loading={notificationsLoading}
-                onMarkRead={handleMarkRead}
-                onMarkAllRead={handleMarkAllRead}
-                onReply={handleInboxReply}
-                replyState={{
-                  input: inboxReplyInput,
-                  sending: inboxReplySending,
-                  error: inboxReplyError,
-                }}
-                onReplyInputChange={setInboxReplyInput}
-              />
-            </div>
-          )}
-
-          {/* Chat Tab */}
-          {activeTab === "chat" && (
-            <div key="chat" className="animate-tab-enter" role="tabpanel" id="tabpanel-chat" aria-labelledby="tab-chat">
-              <ChatPanel
-                messages={chatMessages}
-                activeAgents={activeAgents}
-                targetAgentId={targetAgentId}
-                onTargetChange={setTargetAgentId}
-                onSendMessage={handleSendChat}
-                sending={chatSending}
-                error={chatError}
-                chatInput={chatInput}
-                onChatInputChange={setChatInput}
-              />
-            </div>
-          )}
-        </section>
+            {boardTab === "inbox" && (
+              <div className="animate-tab-enter">
+                <InboxPanel
+                  notifications={notifications}
+                  agents={agents}
+                  loading={notificationsLoading}
+                  onMarkRead={handleMarkRead}
+                  onMarkAllRead={handleMarkAllRead}
+                  onReply={handleInboxReply}
+                  replyState={{
+                    input: inboxReplyInput,
+                    sending: inboxReplySending,
+                    error: inboxReplyError,
+                  }}
+                  onReplyInputChange={setInboxReplyInput}
+                />
+              </div>
+            )}
+          </div>
+        </div>
       </div>
     </div>
   );
