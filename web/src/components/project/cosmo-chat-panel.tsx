@@ -3,7 +3,7 @@
 
 import { memo, useRef, useEffect } from "react";
 import { ArrowUp } from "lucide-react";
-import { Agent, ROLE_EMOJI, ROLE_LABEL } from "@/lib/types";
+import { Agent, ROLE_LABEL } from "@/lib/types";
 
 export interface ChatPanelMessage {
   from: string;

@@ -3,7 +3,7 @@
 
 import { memo, useState, useRef, useEffect } from "react";
 import { Plus } from "lucide-react";
-import { Agent, AgentRole, ROLE_EMOJI, ROLE_LABEL, STATUS_COLOR } from "@/lib/types";
+import { Agent, AgentRole, ROLE_EMOJI, ROLE_LABEL } from "@/lib/types";
 import { createAgent } from "@/lib/api";
 
 interface AgentAvatarsProps {
