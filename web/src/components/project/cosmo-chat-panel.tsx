@@ -28,6 +28,7 @@ interface CosmoChatPanelProps {
   onSendMessage: () => Promise<void>;
   sending: boolean;
   error: string | null;
+  projectPhase: string;
 }
 
 function activityDotColor(role: string): string {
@@ -57,9 +58,17 @@ export const CosmoChatPanel = memo(function CosmoChatPanel({
   onSendMessage,
   sending,
   error,
+  projectPhase,
 }: CosmoChatPanelProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const isOnline = orchestrator && orchestrator.status !== "terminated" && orchestrator.status !== "complete";
+  const isCompleted = (orchestrator?.status === "complete") || (!orchestrator && projectPhase === "complete");
+  const statusText = isOnline ? "Orchestrating" : isCompleted ? "Completed" : "Offline";
+  const placeholderText = isOnline
+    ? "Message Cosmo..."
+    : isCompleted
+      ? "Cosmo has finished"
+      : "Cosmo is offline";
 
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -81,8 +90,8 @@ export const CosmoChatPanel = memo(function CosmoChatPanel({
         </div>
         <div>
           <div className="text-sm font-semibold text-zinc-900 dark:text-zinc-100">Cosmo</div>
-          <div className={`text-[11px] ${isOnline ? "text-green-400" : "text-zinc-500"}`}>
-            {isOnline ? "Orchestrating" : "Offline"}
+          <div className={`text-[11px] ${isOnline ? "text-green-400" : isCompleted ? "text-blue-400" : "text-zinc-500"}`}>
+            {statusText}
           </div>
         </div>
       </div>
@@ -147,7 +156,7 @@ export const CosmoChatPanel = memo(function CosmoChatPanel({
           value={chatInput}
           onChange={(e) => onChatInputChange(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={isOnline ? "Message Cosmo..." : "Cosmo is offline"}
+          placeholder={placeholderText}
           disabled={!isOnline || sending}
           className="flex-1 bg-zinc-100 dark:bg-zinc-800 rounded-lg px-3.5 py-2.5 text-[13px] text-zinc-800 dark:text-zinc-200 placeholder-zinc-400 dark:placeholder-zinc-600 border-none outline-none focus:ring-1 focus:ring-zinc-300 dark:focus:ring-zinc-700 disabled:opacity-50"
         />
