@@ -1,9 +1,8 @@
 "use client";
 
 import { memo } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
 import { ROLE_EMOJI } from "@/lib/types";
 import type { Agent, WorkItem, WorkItemStatus } from "@/lib/types";
 import {
@@ -81,40 +80,32 @@ export const KanbanBoard = memo(function KanbanBoard({
   viewMode,
   onViewModeChange,
 }: KanbanBoardProps) {
-  const totalCount = workItems.length;
-
   return (
     <Card>
-      <CardHeader>
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base">
-            Work Items
-            {totalCount > 0 && (
-              <span className="ml-2 text-xs font-normal text-zinc-500">
-                {totalCount} total
-              </span>
-            )}
-          </CardTitle>
-          <div className="flex gap-1">
-            <Button
-              size="sm"
-              variant={viewMode === "kanban" ? "primary" : "ghost"}
-              className="h-6 px-2 text-xs"
-              onClick={() => onViewModeChange("kanban")}
-            >
-              Board
-            </Button>
-            <Button
-              size="sm"
-              variant={viewMode === "list" ? "primary" : "ghost"}
-              className="h-6 px-2 text-xs"
-              onClick={() => onViewModeChange("list")}
-            >
-              List
-            </Button>
-          </div>
+      <div className="flex items-center justify-end px-4 pt-3 pb-1">
+        <div className="flex items-center gap-1 rounded-lg bg-zinc-100/50 dark:bg-zinc-800/50 p-0.5">
+          <button
+            onClick={() => onViewModeChange("kanban")}
+            className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+              viewMode === "kanban"
+                ? "bg-blue-600 text-white"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
+            }`}
+          >
+            Board
+          </button>
+          <button
+            onClick={() => onViewModeChange("list")}
+            className={`px-2.5 py-1 text-xs rounded-md transition-colors ${
+              viewMode === "list"
+                ? "bg-blue-600 text-white"
+                : "text-zinc-500 dark:text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300"
+            }`}
+          >
+            List
+          </button>
         </div>
-      </CardHeader>
+      </div>
       <CardContent>
         {workItems.length === 0 ? (
           <div className="text-center py-8">
