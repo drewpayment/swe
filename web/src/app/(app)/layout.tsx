@@ -37,8 +37,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         onClose={() => setSidebarOpen(false)}
       />
 
-      <main className="flex-1 overflow-y-auto">
-        <div className="mx-auto max-w-7xl px-6 py-8 lg:pt-8 pt-16">{children}</div>
+      <main className="flex-1 flex flex-col min-h-0 overflow-hidden">
+        <div className="mx-auto max-w-7xl px-6 py-8 lg:pt-8 pt-16 flex-1 flex flex-col min-h-0">{children}</div>
       </main>
     </div>
   );
