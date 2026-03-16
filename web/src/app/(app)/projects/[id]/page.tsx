@@ -482,7 +482,7 @@ export default function ProjectDetailPage() {
             )}
 
             {boardTab === "summary" && project && (
-              <div className="animate-tab-enter h-full">
+              <div className="animate-tab-enter">
                 <SummaryPanel
                   project={project}
                   agents={agents}

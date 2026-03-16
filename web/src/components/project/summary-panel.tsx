@@ -82,7 +82,7 @@ export const SummaryPanel = memo(function SummaryPanel({
   }, [workItems]);
 
   return (
-    <div className="p-5 space-y-5 overflow-y-auto h-full">
+    <div className="p-5 space-y-5">
       {/* Completion banner */}
       {isComplete && (
         <div className="flex items-center gap-3 px-4 py-3 rounded-lg bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-900">
