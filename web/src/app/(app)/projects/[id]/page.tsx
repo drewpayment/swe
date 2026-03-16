@@ -39,6 +39,7 @@ import { CosmoChatPanel } from "@/components/project/cosmo-chat-panel";
 import type { ChatPanelMessage, AgentActivity } from "@/components/project/cosmo-chat-panel";
 import { AgentAvatars } from "@/components/project/agent-avatars";
 import { InboxPanel } from "@/components/project/inbox-panel";
+import { SummaryPanel } from "@/components/project/summary-panel";
 
 export default function ProjectDetailPage() {
   const { id } = useParams();
@@ -53,8 +54,9 @@ export default function ProjectDetailPage() {
   const [chatError, setChatError] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatPanelMessage[]>([]);
   const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
-  const [boardTab, setBoardTab] = useState<"board" | "inbox">("board");
+  const [boardTab, setBoardTab] = useState<"board" | "inbox" | "summary">("board");
   const [activities, setActivities] = useState<AgentActivity[]>([]);
+  const initialTabApplied = useRef(false);
   const [notifications, setNotifications] = useState<Notification[]>([]);
   const [notificationsLoading, setNotificationsLoading] = useState(false);
   const [inboxReplyInput, setInboxReplyInput] = useState("");
@@ -78,6 +80,14 @@ export default function ProjectDetailPage() {
   const orchestrator = agents.find(
     (a) => a.role === "project_orchestrator" && a.status !== "terminated" && a.status !== "complete"
   ) ?? null;
+
+  // Auto-select Summary tab when project is complete (initial load only)
+  useEffect(() => {
+    if (project && project.phase === "complete" && !initialTabApplied.current) {
+      initialTabApplied.current = true;
+      setBoardTab("summary");
+    }
+  }, [project]);
 
   const refreshAll = useCallback(async () => {
     if (!projectId) return;
@@ -380,6 +390,7 @@ export default function ProjectDetailPage() {
           messages={chatMessages}
           activities={activities}
           orchestrator={orchestrator}
+          projectPhase={project?.phase ?? ""}
           chatInput={chatInput}
           onChatInputChange={setChatInput}
           onSendMessage={handleSendChat}
@@ -413,6 +424,19 @@ export default function ProjectDetailPage() {
                 Inbox
                 {notifications.filter((n) => !n.read).length > 0 && (
                   <span className="absolute -top-1 -right-3 w-2 h-2 rounded-full bg-blue-500" />
+                )}
+              </button>
+              <button
+                onClick={() => setBoardTab("summary")}
+                className={`text-[13px] font-medium pb-0.5 transition-colors relative ${
+                  boardTab === "summary"
+                    ? "text-zinc-900 dark:text-zinc-100 border-b-2 border-blue-500"
+                    : "text-zinc-500 hover:text-zinc-700 dark:hover:text-zinc-400"
+                }`}
+              >
+                Summary
+                {project.phase === "complete" && boardTab !== "summary" && (
+                  <span className="absolute -top-1 -right-3 w-2 h-2 rounded-full bg-green-500" />
                 )}
               </button>
             </div>
@@ -453,6 +477,17 @@ export default function ProjectDetailPage() {
                     error: inboxReplyError,
                   }}
                   onReplyInputChange={setInboxReplyInput}
+                />
+              </div>
+            )}
+
+            {boardTab === "summary" && project && (
+              <div className="animate-tab-enter h-full">
+                <SummaryPanel
+                  project={project}
+                  agents={agents}
+                  artifacts={artifacts}
+                  workItems={workItems}
                 />
               </div>
             )}

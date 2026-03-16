@@ -4,7 +4,7 @@
 import { memo, useMemo } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ROLE_EMOJI, ROLE_LABEL } from "@/lib/types";
-import type { Project, Agent, Artifact, WorkItem, ProjectPhase } from "@/lib/types";
+import type { Project, Agent, Artifact, WorkItem } from "@/lib/types";
 import {
   CheckCircle,
   Folder,
@@ -14,7 +14,6 @@ import {
   Clock,
   Users,
   ListChecks,
-  PackageCheck,
 } from "lucide-react";
 
 interface SummaryPanelProps {
