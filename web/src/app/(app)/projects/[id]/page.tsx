@@ -75,7 +75,9 @@ export default function ProjectDetailPage() {
     [completedCount, totalCount]
   );
 
-  const orchestrator = agents.find((a) => a.role === "project_orchestrator") ?? null;
+  const orchestrator = agents.find(
+    (a) => a.role === "project_orchestrator" && a.status !== "terminated" && a.status !== "complete"
+  ) ?? null;
 
   const refreshAll = useCallback(async () => {
     if (!projectId) return;
@@ -174,7 +176,7 @@ export default function ProjectDetailPage() {
         }
       }
     }
-  }, [events, projectId, refreshAll]);
+  }, [events, projectId, refreshAll, agents]);
 
   // Periodic refresh every 15s for autonomous updates
   useEffect(() => {
@@ -218,7 +220,6 @@ export default function ProjectDetailPage() {
 
   async function handleInboxReply() {
     if (!inboxReplyInput.trim() || inboxReplySending) return;
-    const orchestrator = agents.find((a) => a.role === "project_orchestrator" && a.status !== "terminated" && a.status !== "complete");
     if (!orchestrator) {
       setInboxReplyError("No active orchestrator agent to reply to");
       return;
