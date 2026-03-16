@@ -175,6 +175,9 @@ export async function markNotificationRead(id: string): Promise<ApiResponse<{ ma
 }
 
 export async function markAllNotificationsRead(projectId?: string): Promise<ApiResponse<{ status: string }>> {
-  const params = projectId ? `?project_id=${projectId}` : "";
-  return fetchApi(`/api/v1/notifications/mark-all-read${params}`, { method: "POST" });
+  return fetchApi("/api/v1/notifications/mark-all-read", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ project_id: projectId ?? "" }),
+  });
 }
