@@ -82,7 +82,7 @@ export const CosmoChatPanel = memo(function CosmoChatPanel({
   }
 
   return (
-    <div className="flex flex-col w-[420px] min-w-[420px] h-full bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
+    <div className="flex flex-col w-[380px] min-w-[320px] shrink-0 h-full bg-white dark:bg-zinc-900 rounded-xl border border-zinc-200 dark:border-zinc-800 overflow-hidden">
       {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3.5 border-b border-zinc-200 dark:border-zinc-800">
         <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-blue-500 flex items-center justify-center text-base">
