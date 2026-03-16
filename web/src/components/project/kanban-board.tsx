@@ -87,7 +87,7 @@ export const KanbanBoard = memo(function KanbanBoard({
     return (
       <div
         key={col.key}
-        className={`flex-1 min-w-0 rounded-lg border ${col.color} bg-zinc-50/50 dark:bg-zinc-900/50 p-2`}
+        className={`h-full min-w-0 rounded-lg border ${col.color} bg-zinc-50/50 dark:bg-zinc-900/50 p-2 flex flex-col`}
       >
         <div className="flex items-center justify-between mb-2 px-1">
           <span className="text-xs font-medium text-zinc-600 dark:text-zinc-400">
@@ -97,7 +97,7 @@ export const KanbanBoard = memo(function KanbanBoard({
             {items.length}
           </span>
         </div>
-        <div className="space-y-1.5">
+        <div className="space-y-1.5 flex-1 overflow-y-auto">
           {items.map((item) => (
             <div
               key={item.id}
@@ -131,9 +131,9 @@ export const KanbanBoard = memo(function KanbanBoard({
   }
 
   return (
-    <div className="p-4 space-y-3">
+    <div className="p-4 flex flex-col gap-3 h-full">
       {/* View toggle */}
-      <div className="flex items-center justify-end">
+      <div className="flex items-center justify-end flex-shrink-0">
         <div className="flex items-center gap-1 rounded-lg bg-zinc-100/50 dark:bg-zinc-800/50 p-0.5">
           <button
             onClick={() => onViewModeChange("kanban")}
@@ -169,15 +169,19 @@ export const KanbanBoard = memo(function KanbanBoard({
           </p>
         </div>
       ) : viewMode === "kanban" ? (
-        <div className="space-y-3">
-          {/* Row 1: Backlog + Assigned */}
-          <div className="flex gap-3">
-            {KANBAN_ROW_1.map(renderColumn)}
-          </div>
-          {/* Row 2: In Progress + Review + Done */}
-          <div className="flex gap-3">
-            {KANBAN_ROW_2.map(renderColumn)}
-          </div>
+        <div className="grid grid-cols-6 grid-rows-2 gap-3 flex-1 min-h-0">
+          {/* Row 1: Backlog (3 cols) + Assigned (3 cols) */}
+          {KANBAN_ROW_1.map((col) => (
+            <div key={col.key} className="col-span-3">
+              {renderColumn(col)}
+            </div>
+          ))}
+          {/* Row 2: In Progress (2 cols) + Review (2 cols) + Done (2 cols) */}
+          {KANBAN_ROW_2.map((col) => (
+            <div key={col.key} className="col-span-2">
+              {renderColumn(col)}
+            </div>
+          ))}
         </div>
       ) : (
         <div className="space-y-2">
