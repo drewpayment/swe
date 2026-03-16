@@ -8,6 +8,7 @@ import { Menu } from "lucide-react";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const { connected, events } = useWebSocket();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   return (
     <div className="flex h-screen">
@@ -35,6 +36,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         events={events}
         sidebarOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        collapsed={sidebarCollapsed}
+        onToggleCollapse={() => setSidebarCollapsed((v) => !v)}
       />
 
       <main className="flex-1 flex flex-col min-h-0 overflow-hidden">

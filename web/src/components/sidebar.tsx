@@ -11,6 +11,8 @@ import {
   Activity,
   Bot,
   Bell,
+  PanelLeftClose,
+  PanelLeftOpen,
 } from "lucide-react";
 import { getUnreadCount, listNotifications, markNotificationRead } from "@/lib/api";
 import type { Notification } from "@/lib/types";
@@ -28,9 +30,11 @@ interface SidebarProps {
   events?: StreamEvent[];
   sidebarOpen?: boolean;
   onClose?: () => void;
+  collapsed?: boolean;
+  onToggleCollapse?: () => void;
 }
 
-export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProps) {
+export function Sidebar({ connected, events, sidebarOpen, onClose, collapsed, onToggleCollapse }: SidebarProps) {
   const pathname = usePathname();
   const router = useRouter();
   const [unreadCount, setUnreadCount] = useState(0);
@@ -161,38 +165,44 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
   return (
     <aside
       className={cn(
-        "flex h-screen w-64 flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950",
+        "flex h-screen flex-col border-r border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950 transition-all duration-200 ease-in-out",
+        collapsed ? "w-16" : "w-64",
         // Desktop: always visible
         "lg:relative lg:translate-x-0 lg:flex",
-        // Mobile: fixed drawer, shown/hidden based on sidebarOpen
-        "fixed inset-y-0 left-0 z-50 transition-transform duration-200 ease-in-out",
+        // Mobile: fixed drawer, shown/hidden based on sidebarOpen (never collapsed on mobile)
+        "fixed inset-y-0 left-0 z-50",
         sidebarOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
       )}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3 border-b border-zinc-200 dark:border-zinc-800 px-6 py-5">
-        <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+      <div className={cn("flex items-center border-b border-zinc-200 dark:border-zinc-800 py-5", collapsed ? "justify-center px-3" : "gap-3 px-6")}>
+        <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-lg bg-blue-600">
           <Bot className="h-5 w-5 text-white" />
         </div>
-        <div>
-          <h1 className="text-lg font-bold text-zinc-900 dark:text-white">SWE</h1>
-          <p className="text-[10px] text-zinc-500 uppercase tracking-wider">
-            Agentic Platform
-          </p>
-        </div>
+        {!collapsed && (
+          <div>
+            <h1 className="text-lg font-bold text-zinc-900 dark:text-white">SWE</h1>
+            <p className="text-[10px] text-zinc-500 uppercase tracking-wider">
+              Agentic Platform
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Notification bell */}
-      <div className="border-b border-zinc-200 dark:border-zinc-800 px-3 py-3 relative" ref={bellRef} onKeyDown={handleBellKeyDown}>
+      <div className={cn("border-b border-zinc-200 dark:border-zinc-800 py-3 relative", collapsed ? "px-2" : "px-3")} ref={bellRef} onKeyDown={handleBellKeyDown}>
         <button
           ref={bellButtonRef}
           onClick={() => setBellOpen((prev) => !prev)}
           aria-label="Notifications"
           aria-expanded={bellOpen}
           aria-haspopup="listbox"
-          className="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white transition-colors"
+          className={cn(
+            "flex w-full items-center rounded-lg py-2 text-sm font-medium text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white transition-colors",
+            collapsed ? "justify-center px-2" : "gap-3 px-3"
+          )}
         >
-          <div className="relative">
+          <div className="relative flex-shrink-0">
             <Bell className="h-4 w-4" />
             {unreadCount > 0 && (
               <span
@@ -206,7 +216,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
               </span>
             )}
           </div>
-          Notifications
+          {!collapsed && "Notifications"}
         </button>
         <span aria-live="polite" aria-atomic="true" className="sr-only">
           {unreadCount > 0 ? `${unreadCount} unread notification${unreadCount === 1 ? "" : "s"}` : ""}
@@ -277,7 +287,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
       </div>
 
       {/* Navigation */}
-      <nav className="flex-1 space-y-1 px-3 py-4">
+      <nav className={cn("flex-1 space-y-1 py-4", collapsed ? "px-2" : "px-3")}>
         {navItems.map((item) => {
           const isActive =
             pathname === item.href || pathname?.startsWith(item.href + "/");
@@ -287,38 +297,76 @@ export function Sidebar({ connected, events, sidebarOpen, onClose }: SidebarProp
               href={item.href}
               aria-current={isActive ? "page" : undefined}
               onClick={() => onClose?.()}
+              title={collapsed ? item.label : undefined}
               className={cn(
-                "flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors",
+                "flex items-center rounded-lg py-2 text-sm font-medium transition-colors",
+                collapsed ? "justify-center px-2" : "gap-3 px-3",
                 isActive
                   ? "bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-white"
                   : "text-zinc-600 dark:text-zinc-400 hover:bg-zinc-100 dark:hover:bg-zinc-900 hover:text-zinc-900 dark:hover:text-white"
               )}
             >
-              <item.icon className="h-4 w-4" />
-              {item.label}
+              <item.icon className="h-4 w-4 flex-shrink-0" />
+              {!collapsed && item.label}
             </Link>
           );
         })}
       </nav>
 
       {/* Status footer */}
-      <div className="border-t border-zinc-200 dark:border-zinc-800 px-4 py-3">
-        <div className="flex items-center gap-2 text-xs text-zinc-500">
-          <Activity className="h-3 w-3" />
-          <span>v0.1.0</span>
-          <span className="ml-auto flex items-center gap-1">
+      <div className={cn("border-t border-zinc-200 dark:border-zinc-800 py-3", collapsed ? "px-2" : "px-4")}>
+        {collapsed ? (
+          <div className="flex flex-col items-center gap-2">
             <span
               className={cn(
                 "h-1.5 w-1.5 rounded-full",
                 connected ? "bg-green-500" : "bg-yellow-500"
               )}
+              title={connected ? "Connected" : "Offline"}
             />
-            {connected ? "Connected" : "Offline"}
-          </span>
-        </div>
-        <div className="mt-2 flex justify-end">
-          <ThemeToggle />
-        </div>
+            <ThemeToggle />
+          </div>
+        ) : (
+          <>
+            <div className="flex items-center gap-2 text-xs text-zinc-500">
+              <Activity className="h-3 w-3" />
+              <span>v0.1.0</span>
+              <span className="ml-auto flex items-center gap-1">
+                <span
+                  className={cn(
+                    "h-1.5 w-1.5 rounded-full",
+                    connected ? "bg-green-500" : "bg-yellow-500"
+                  )}
+                />
+                {connected ? "Connected" : "Offline"}
+              </span>
+            </div>
+            <div className="mt-2 flex justify-end">
+              <ThemeToggle />
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Collapse toggle (desktop only) */}
+      <div className="hidden lg:flex border-t border-zinc-200 dark:border-zinc-800">
+        <button
+          onClick={onToggleCollapse}
+          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+          className={cn(
+            "flex w-full items-center py-2.5 text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-900 transition-colors",
+            collapsed ? "justify-center px-2" : "gap-2 px-4"
+          )}
+        >
+          {collapsed ? (
+            <PanelLeftOpen className="h-4 w-4" />
+          ) : (
+            <>
+              <PanelLeftClose className="h-4 w-4" />
+              <span className="text-xs">Collapse</span>
+            </>
+          )}
+        </button>
       </div>
     </aside>
   );
