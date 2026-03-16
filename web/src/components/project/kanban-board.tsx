@@ -1,8 +1,8 @@
 "use client";
 
-import { memo } from "react";
+import { memo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
-import { ROLE_EMOJI } from "@/lib/types";
+import { ROLE_EMOJI, ROLE_LABEL } from "@/lib/types";
 import type { Agent, WorkItem, WorkItemStatus } from "@/lib/types";
 import {
   CheckCircle,
@@ -12,6 +12,10 @@ import {
   Pause,
   Circle,
   User,
+  X,
+  GitBranch,
+  ExternalLink,
+  CalendarDays,
 } from "lucide-react";
 
 /* ─── Work item helpers ─── */
@@ -82,6 +86,8 @@ export const KanbanBoard = memo(function KanbanBoard({
   viewMode,
   onViewModeChange,
 }: KanbanBoardProps) {
+  const [selectedItem, setSelectedItem] = useState<WorkItem | null>(null);
+
   function renderColumn(col: { key: WorkItemStatus; label: string; color: string }) {
     const items = workItems.filter((w) => w.status === col.key);
     return (
@@ -99,9 +105,10 @@ export const KanbanBoard = memo(function KanbanBoard({
         </div>
         <div className="space-y-1.5 flex-1 overflow-y-auto">
           {items.map((item) => (
-            <div
+            <button
               key={item.id}
-              className="rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2 min-h-[44px] hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+              onClick={() => setSelectedItem(item)}
+              className="w-full text-left rounded-md border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 p-2 min-h-[44px] hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer"
             >
               <p className="text-xs font-medium text-zinc-700 dark:text-zinc-300 leading-snug">
                 {item.title}
@@ -118,7 +125,7 @@ export const KanbanBoard = memo(function KanbanBoard({
                   </span>
                 )}
               </div>
-            </div>
+            </button>
           ))}
           {items.length === 0 && (
             <p className="text-[10px] text-zinc-400 dark:text-zinc-700 text-center py-3">
@@ -186,9 +193,10 @@ export const KanbanBoard = memo(function KanbanBoard({
       ) : (
         <div className="space-y-2">
           {workItems.map((item) => (
-            <div
+            <button
               key={item.id}
-              className="flex items-center gap-3 rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2 hover:border-zinc-300 dark:hover:border-zinc-700 transition-colors"
+              onClick={() => setSelectedItem(item)}
+              className="w-full flex items-center gap-3 rounded-lg border border-zinc-200 dark:border-zinc-800 px-3 py-2 hover:border-zinc-400 dark:hover:border-zinc-600 hover:bg-zinc-50 dark:hover:bg-zinc-800/80 transition-colors cursor-pointer"
             >
               {workItemStatusIcon(item.status)}
               <div className="flex-1 min-w-0">
@@ -214,10 +222,174 @@ export const KanbanBoard = memo(function KanbanBoard({
               <Badge variant={workItemStatusBadge(item.status)}>
                 {item.status.replace(/_/g, " ")}
               </Badge>
-            </div>
+            </button>
           ))}
         </div>
+      )}
+
+      {/* Work Item Detail Panel */}
+      {selectedItem && (
+        <WorkItemDetail
+          item={selectedItem}
+          agent={agents.find((a) => a.id === selectedItem.assigned_agent_id) ?? null}
+          onClose={() => setSelectedItem(null)}
+        />
       )}
     </div>
   );
 });
+
+/* ─── Work Item Detail Panel ─── */
+
+function WorkItemDetail({
+  item,
+  agent,
+  onClose,
+}: {
+  item: WorkItem;
+  agent: Agent | null;
+  onClose: () => void;
+}) {
+  return (
+    <>
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 z-40 bg-black/40"
+        onClick={onClose}
+        aria-hidden="true"
+      />
+      {/* Panel */}
+      <div className="fixed right-0 top-0 bottom-0 z-50 w-full max-w-md bg-white dark:bg-zinc-900 border-l border-zinc-200 dark:border-zinc-800 shadow-2xl flex flex-col animate-slide-in-right">
+        {/* Header */}
+        <div className="flex items-start justify-between gap-3 px-5 pt-5 pb-4 border-b border-zinc-200 dark:border-zinc-800">
+          <div className="flex-1 min-w-0">
+            <div className="flex items-center gap-2 mb-1">
+              {workItemStatusIcon(item.status)}
+              <Badge variant={workItemStatusBadge(item.status)}>
+                {item.status.replace(/_/g, " ")}
+              </Badge>
+              <span className={`text-[10px] uppercase font-semibold ${priorityColor(item.priority)}`}>
+                {item.priority}
+              </span>
+            </div>
+            <h3 className="text-base font-semibold text-zinc-900 dark:text-zinc-100">
+              {item.title}
+            </h3>
+          </div>
+          <button
+            onClick={onClose}
+            className="flex-shrink-0 p-1 rounded-md text-zinc-400 hover:text-zinc-600 dark:hover:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 transition-colors"
+            aria-label="Close"
+          >
+            <X className="h-5 w-5" />
+          </button>
+        </div>
+
+        {/* Body */}
+        <div className="flex-1 overflow-y-auto px-5 py-4 space-y-5">
+          {/* Description */}
+          {item.description && (
+            <div>
+              <label className="text-[10px] uppercase font-semibold text-zinc-500 tracking-wider">
+                Description
+              </label>
+              <p className="mt-1 text-sm text-zinc-700 dark:text-zinc-300 leading-relaxed">
+                {item.description}
+              </p>
+            </div>
+          )}
+
+          {/* Assigned Agent */}
+          {agent && (
+            <div>
+              <label className="text-[10px] uppercase font-semibold text-zinc-500 tracking-wider">
+                Assigned Agent
+              </label>
+              <div className="mt-1.5 flex items-center gap-2">
+                <span className="text-base">{ROLE_EMOJI[agent.role]}</span>
+                <div>
+                  <p className="text-sm font-medium text-zinc-800 dark:text-zinc-200">
+                    {agent.name || ROLE_LABEL[agent.role]}
+                  </p>
+                  <p className="text-[11px] text-zinc-500">{agent.role.replace(/_/g, " ")}</p>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Branch / PR */}
+          {(item.branch_name || item.pr_url) && (
+            <div>
+              <label className="text-[10px] uppercase font-semibold text-zinc-500 tracking-wider">
+                Git
+              </label>
+              <div className="mt-1.5 space-y-1.5">
+                {item.branch_name && (
+                  <div className="flex items-center gap-2 text-sm text-zinc-600 dark:text-zinc-400">
+                    <GitBranch className="h-3.5 w-3.5 flex-shrink-0" />
+                    <code className="text-xs bg-zinc-100 dark:bg-zinc-800 px-1.5 py-0.5 rounded font-mono">
+                      {item.branch_name}
+                    </code>
+                  </div>
+                )}
+                {item.pr_url && (
+                  <a
+                    href={item.pr_url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex items-center gap-2 text-sm text-blue-500 hover:text-blue-400 transition-colors"
+                  >
+                    <ExternalLink className="h-3.5 w-3.5 flex-shrink-0" />
+                    View Pull Request
+                  </a>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Timestamps */}
+          <div>
+            <label className="text-[10px] uppercase font-semibold text-zinc-500 tracking-wider">
+              Timeline
+            </label>
+            <div className="mt-1.5 space-y-1">
+              <TimelineRow label="Created" date={item.created_at} />
+              {item.started_at && <TimelineRow label="Started" date={item.started_at} />}
+              {item.completed_at && <TimelineRow label="Completed" date={item.completed_at} />}
+              {item.updated_at !== item.created_at && (
+                <TimelineRow label="Updated" date={item.updated_at} />
+              )}
+            </div>
+          </div>
+
+          {/* Dependencies */}
+          {(item.depends_on.length > 0 || item.blocks.length > 0) && (
+            <div>
+              <label className="text-[10px] uppercase font-semibold text-zinc-500 tracking-wider">
+                Dependencies
+              </label>
+              <div className="mt-1.5 space-y-1 text-xs text-zinc-500">
+                {item.depends_on.length > 0 && (
+                  <p>Depends on: {item.depends_on.length} item{item.depends_on.length > 1 ? "s" : ""}</p>
+                )}
+                {item.blocks.length > 0 && (
+                  <p>Blocks: {item.blocks.length} item{item.blocks.length > 1 ? "s" : ""}</p>
+                )}
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
+    </>
+  );
+}
+
+function TimelineRow({ label, date }: { label: string; date: string }) {
+  return (
+    <div className="flex items-center gap-2 text-xs text-zinc-500">
+      <CalendarDays className="h-3 w-3 flex-shrink-0 text-zinc-400" />
+      <span className="text-zinc-600 dark:text-zinc-400 font-medium">{label}:</span>
+      <span>{new Date(date).toLocaleString()}</span>
+    </div>
+  );
+}
