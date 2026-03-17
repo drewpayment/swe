@@ -81,6 +81,16 @@ export default function ProjectDetailPage() {
     (a) => a.role === "project_orchestrator" && a.status !== "terminated" && a.status !== "complete"
   ) ?? null;
 
+  // Filter chat to only Cosmo (orchestrator) messages + user messages
+  const orchestratorIds = useMemo(
+    () => new Set(agents.filter((a) => a.role === "project_orchestrator").map((a) => a.id)),
+    [agents]
+  );
+  const cosmoMessages = useMemo(
+    () => chatMessages.filter((m) => m.role === "user" || m.role === "system" || !m.agentId || orchestratorIds.has(m.agentId)),
+    [chatMessages, orchestratorIds]
+  );
+
   // Auto-select Summary tab when project is complete (initial load only)
   useEffect(() => {
     if (project && project.phase === "complete" && !initialTabApplied.current) {
@@ -124,6 +134,7 @@ export default function ProjectDetailPage() {
               content: m.content,
               time: new Date(m.created_at).toLocaleTimeString(),
               role: m.role,
+              agentId: m.agent_id,
             }))
           );
         }
@@ -151,6 +162,7 @@ export default function ProjectDetailPage() {
           content: String(latest.content || ""),
           time: new Date().toLocaleTimeString(),
           role: "assistant",
+          agentId: latest.agent_id as string | undefined,
         },
       ]);
     }
@@ -387,7 +399,7 @@ export default function ProjectDetailPage() {
       <div className="flex gap-3 flex-1 min-h-0">
         {/* Left: Cosmo Chat Panel */}
         <CosmoChatPanel
-          messages={chatMessages}
+          messages={cosmoMessages}
           activities={activities}
           orchestrator={orchestrator}
           projectPhase={project?.phase ?? ""}

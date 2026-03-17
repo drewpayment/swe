@@ -5,6 +5,7 @@ import { memo, useState, useRef, useEffect } from "react";
 import { Plus } from "lucide-react";
 import { Agent, AgentRole, ROLE_EMOJI, ROLE_LABEL } from "@/lib/types";
 import { createAgent } from "@/lib/api";
+import { AgentChatDialog } from "./agent-chat-dialog";
 
 interface AgentAvatarsProps {
   agents: Agent[];
@@ -45,6 +46,7 @@ export const AgentAvatars = memo(function AgentAvatars({
 }: AgentAvatarsProps) {
   const [showSpawnMenu, setShowSpawnMenu] = useState(false);
   const [spawning, setSpawning] = useState(false);
+  const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const menuRef = useRef<HTMLDivElement>(null);
 
   const activeAgents = agents.filter(
@@ -83,16 +85,17 @@ export const AgentAvatars = memo(function AgentAvatars({
       {/* Stacked avatar circles */}
       <div className="flex items-center -space-x-1">
         {activeAgents.map((agent) => (
-          <div
+          <button
             key={agent.id}
-            className="relative w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-800 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-xs cursor-default"
+            onClick={() => setSelectedAgent(agent)}
+            className="relative w-7 h-7 rounded-full bg-zinc-200 dark:bg-zinc-800 border-2 border-white dark:border-zinc-900 flex items-center justify-center text-xs cursor-pointer hover:ring-2 hover:ring-blue-500/50 transition-all"
             title={`${ROLE_LABEL[agent.role]} — ${agent.status}`}
           >
             <span>{ROLE_EMOJI[agent.role]}</span>
             <span
               className={`absolute -bottom-0.5 -right-0.5 w-2 h-2 rounded-full border-[1.5px] border-white dark:border-zinc-900 ${statusDotColor(agent.status)}`}
             />
-          </div>
+          </button>
         ))}
       </div>
 
@@ -122,6 +125,13 @@ export const AgentAvatars = memo(function AgentAvatars({
           </div>
         )}
       </div>
+      {/* Agent Chat Dialog */}
+      {selectedAgent && (
+        <AgentChatDialog
+          agent={selectedAgent}
+          onClose={() => setSelectedAgent(null)}
+        />
+      )}
     </div>
   );
 });

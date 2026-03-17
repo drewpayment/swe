@@ -10,6 +10,7 @@ export interface ChatPanelMessage {
   content: string;
   time: string;
   role: string;
+  agentId?: string;
 }
 
 export interface AgentActivity {

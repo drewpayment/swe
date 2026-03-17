@@ -1,9 +1,10 @@
 "use client";
 
-import { memo, useState } from "react";
+import { memo, useState, useEffect } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ROLE_EMOJI, ROLE_LABEL } from "@/lib/types";
-import type { Agent, WorkItem, WorkItemStatus } from "@/lib/types";
+import type { Agent, WorkItem, WorkItemStatus, ChatMessage } from "@/lib/types";
+import { listAgentChatMessages } from "@/lib/api";
 import {
   CheckCircle,
   Clock,
@@ -16,6 +17,7 @@ import {
   GitBranch,
   ExternalLink,
   CalendarDays,
+  MessageSquare,
 } from "lucide-react";
 
 /* ─── Work item helpers ─── */
@@ -250,6 +252,22 @@ function WorkItemDetail({
   agent: Agent | null;
   onClose: () => void;
 }) {
+  const [agentMessages, setAgentMessages] = useState<ChatMessage[]>([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
+
+  useEffect(() => {
+    if (!item.assigned_agent_id) return;
+    async function fetchMessages() {
+      setMessagesLoading(true);
+      const res = await listAgentChatMessages(item.assigned_agent_id!);
+      if (res.success && res.data) {
+        setAgentMessages(res.data);
+      }
+      setMessagesLoading(false);
+    }
+    fetchMessages();
+  }, [item.assigned_agent_id]);
+
   return (
     <>
       {/* Backdrop */}
@@ -374,6 +392,41 @@ function WorkItemDetail({
                 )}
                 {item.blocks.length > 0 && (
                   <p>Blocks: {item.blocks.length} item{item.blocks.length > 1 ? "s" : ""}</p>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* Agent Messages */}
+          {item.assigned_agent_id && (
+            <div>
+              <label className="text-[10px] uppercase font-semibold text-zinc-500 tracking-wider flex items-center gap-1.5">
+                <MessageSquare className="h-3 w-3" />
+                Agent Messages
+              </label>
+              <div className="mt-2 space-y-2">
+                {messagesLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <div className="h-4 w-4 border-2 border-zinc-300 dark:border-zinc-700 border-t-blue-500 rounded-full animate-spin" />
+                  </div>
+                ) : agentMessages.length === 0 ? (
+                  <p className="text-xs text-zinc-400 dark:text-zinc-600 py-2">No messages</p>
+                ) : (
+                  agentMessages.map((msg) => (
+                    <div
+                      key={msg.id}
+                      className={`px-3 py-2 rounded-lg text-xs leading-relaxed ${
+                        msg.role === "user"
+                          ? "bg-blue-600/10 text-blue-300 border border-blue-800/30"
+                          : "bg-zinc-100 dark:bg-zinc-800 text-zinc-700 dark:text-zinc-300"
+                      }`}
+                    >
+                      <p className="whitespace-pre-wrap line-clamp-4">{msg.content}</p>
+                      <p className="text-[10px] text-zinc-400 dark:text-zinc-600 mt-1">
+                        {new Date(msg.created_at).toLocaleTimeString()}
+                      </p>
+                    </div>
+                  ))
                 )}
               </div>
             </div>
