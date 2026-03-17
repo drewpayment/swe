@@ -1,10 +1,11 @@
 // web/src/components/project/summary-panel.tsx
 "use client";
 
-import { memo, useMemo } from "react";
+import { memo, useMemo, useState } from "react";
 import { Badge } from "@/components/ui/badge";
 import { ROLE_EMOJI, ROLE_LABEL } from "@/lib/types";
 import type { Project, Agent, Artifact, WorkItem } from "@/lib/types";
+import { WorkItemDetail } from "./work-item-detail";
 import {
   CheckCircle,
   Folder,
@@ -49,6 +50,7 @@ export const SummaryPanel = memo(function SummaryPanel({
   artifacts,
   workItems,
 }: SummaryPanelProps) {
+  const [selectedItem, setSelectedItem] = useState<WorkItem | null>(null);
   const isComplete = project.phase === "complete";
 
   const activeAgentCount = useMemo(
@@ -210,9 +212,10 @@ export const SummaryPanel = memo(function SummaryPanel({
             {sortedWorkItems.map((item) => {
               const agent = agents.find((a) => a.id === item.assigned_agent_id);
               return (
-                <div
+                <button
                   key={item.id}
-                  className="flex items-center gap-2.5 px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900"
+                  onClick={() => setSelectedItem(item)}
+                  className="w-full flex items-center gap-2.5 px-3 py-2 rounded-lg border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900 hover:border-zinc-400 dark:hover:border-zinc-600 transition-colors cursor-pointer text-left"
                 >
                   <CheckCircle className="h-3.5 w-3.5 text-green-400 flex-shrink-0" />
                   <span className="text-sm text-zinc-700 dark:text-zinc-300 truncate flex-1">
@@ -229,11 +232,20 @@ export const SummaryPanel = memo(function SummaryPanel({
                       {new Date(item.completed_at).toLocaleTimeString()}
                     </span>
                   )}
-                </div>
+                </button>
               );
             })}
           </div>
         </div>
+      )}
+
+      {/* Work Item Detail Panel */}
+      {selectedItem && (
+        <WorkItemDetail
+          item={selectedItem}
+          agent={agents.find((a) => a.id === selectedItem.assigned_agent_id) ?? null}
+          onClose={() => setSelectedItem(null)}
+        />
       )}
     </div>
   );

@@ -53,7 +53,7 @@ export default function ProjectDetailPage() {
   const [chatSending, setChatSending] = useState(false);
   const [chatError, setChatError] = useState<string | null>(null);
   const [chatMessages, setChatMessages] = useState<ChatPanelMessage[]>([]);
-  const [viewMode, setViewMode] = useState<"kanban" | "list">("kanban");
+  const [viewMode, setViewMode] = useState<"kanban" | "list">("list");
   const [boardTab, setBoardTab] = useState<"board" | "inbox" | "summary">("board");
   const [activities, setActivities] = useState<AgentActivity[]>([]);
   const initialTabApplied = useRef(false);
