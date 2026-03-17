@@ -571,10 +571,6 @@ func (s *Server) listAgentChatMessages(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) listNotifications(w http.ResponseWriter, r *http.Request) {
 	projectID := r.URL.Query().Get("project_id")
-	if projectID == "" {
-		writeJSON(w, http.StatusBadRequest, core.ErrorResponse[any]("project_id is required"))
-		return
-	}
 
 	limit := 50
 	if l := r.URL.Query().Get("limit"); l != "" {

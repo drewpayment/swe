@@ -2,6 +2,7 @@ package db
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/drewpayment/swe/internal/core"
@@ -52,33 +53,42 @@ func (p *Pool) ListNotifications(ctx context.Context, projectID string, limit, o
 	return scanNotifications(rows)
 }
 
-// ListNotificationsFiltered returns notifications with optional unread filter and total count.
+// ListNotificationsFiltered returns notifications with optional project and unread filters, plus total count.
+// If projectID is empty, returns notifications across all projects.
 func (p *Pool) ListNotificationsFiltered(ctx context.Context, projectID string, unreadOnly bool, limit, offset int) ([]core.Notification, int, error) {
 	if limit <= 0 {
 		limit = 50
 	}
 
-	// Get total count
-	countQuery := `SELECT COUNT(*) FROM notifications WHERE project_id = $1`
-	if unreadOnly {
-		countQuery += ` AND read = FALSE`
+	args := []any{}
+	where := "WHERE 1=1"
+	argIdx := 1
+
+	if projectID != "" {
+		where += fmt.Sprintf(" AND project_id = $%d", argIdx)
+		args = append(args, projectID)
+		argIdx++
 	}
+	if unreadOnly {
+		where += " AND read = FALSE"
+	}
+
+	// Get total count
 	var total int
-	if err := p.QueryRow(ctx, countQuery, projectID).Scan(&total); err != nil {
+	if err := p.QueryRow(ctx, "SELECT COUNT(*) FROM notifications "+where, args...).Scan(&total); err != nil {
 		return nil, 0, err
 	}
 
 	// Get paginated results
-	query := `
+	query := fmt.Sprintf(`
 		SELECT id, project_id, agent_id, type, priority, title, body, read, action_url, created_at
 		FROM notifications
-		WHERE project_id = $1`
-	if unreadOnly {
-		query += ` AND read = FALSE`
-	}
-	query += ` ORDER BY created_at DESC LIMIT $2 OFFSET $3`
+		%s
+		ORDER BY created_at DESC
+		LIMIT $%d OFFSET $%d`, where, argIdx, argIdx+1)
+	args = append(args, limit, offset)
 
-	rows, err := p.Query(ctx, query, projectID, limit, offset)
+	rows, err := p.Query(ctx, query, args...)
 	if err != nil {
 		return nil, 0, err
 	}

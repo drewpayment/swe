@@ -226,7 +226,7 @@ export function Sidebar({ connected, events, sidebarOpen, onClose, collapsed, on
           <div
             role="listbox"
             aria-label="Notifications"
-            className="fixed inset-x-4 top-16 z-50 mt-1 max-h-96 overflow-y-auto rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xl lg:absolute lg:inset-x-auto lg:left-2 lg:right-2 lg:top-full"
+            className="fixed inset-x-4 top-16 z-50 mt-1 max-h-96 w-80 overflow-y-auto rounded-lg border border-zinc-300 dark:border-zinc-700 bg-white dark:bg-zinc-900 shadow-xl lg:absolute lg:inset-x-auto lg:left-0 lg:top-full"
           >
             {notificationsLoading && notifications.length === 0 ? (
               <div className="px-4 py-6 text-center text-xs text-zinc-500">
