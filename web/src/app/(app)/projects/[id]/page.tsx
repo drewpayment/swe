@@ -64,6 +64,7 @@ export default function ProjectDetailPage() {
   const [inboxReplyError, setInboxReplyError] = useState<string | null>(null);
   const markReadCooldownRef = useRef<number>(0);
   const { connected, events } = useWebSocket();
+  const lastProcessedEventCount = useRef(0);
 
   const projectId = typeof id === "string" ? id : Array.isArray(id) ? id[0] : "";
 
@@ -148,55 +149,66 @@ export default function ProjectDetailPage() {
     fetchData();
   }, [projectId]);
 
-  // WebSocket event handling
+  // WebSocket event handling — process only new events since last run
   useEffect(() => {
     if (events.length === 0) return;
-    const latest = events[events.length - 1];
-    if (latest.project_id !== projectId) return;
+    const newEvents = events.slice(lastProcessedEventCount.current);
+    lastProcessedEventCount.current = events.length;
+    if (newEvents.length === 0) return;
 
-    if (latest.type === "chat_message") {
-      setChatMessages((prev) => [
-        ...prev,
-        {
-          from: String(latest.agent_name || "Agent"),
-          content: String(latest.content || ""),
-          time: new Date().toLocaleTimeString(),
-          role: "assistant",
-          agentId: latest.agent_id as string | undefined,
-        },
-      ]);
-    }
+    let needsRefresh = false;
 
-    const refreshTypes = [
-      "agent_status",
-      "artifact_created",
-      "phase_change",
-      "work_item_update",
-    ];
-    if (refreshTypes.includes(latest.type)) {
-      refreshAll();
-    }
+    for (const event of newEvents) {
+      if (event.project_id !== projectId) continue;
 
-    // Build activity from agent_status and work_item_update events
-    if (latest.type === "agent_status" || latest.type === "work_item_update") {
-      const agent = agents.find((a) => a.id === latest.agent_id);
-      if (agent) {
-        const action = latest.type === "agent_status"
-          ? (latest.status as string) ?? "updated"
-          : (latest.action as string) ?? "updated";
-        const target = (latest.work_item_title as string) ?? (latest.name as string) ?? "";
-        if (target) {
-          setActivities((prev) => [
-            ...prev.slice(-19),
-            {
-              agentRole: agent.role,
-              action,
-              target,
-              timestamp: new Date().toISOString(),
-            },
-          ]);
+      if (event.type === "chat_message") {
+        setChatMessages((prev) => [
+          ...prev,
+          {
+            from: String(event.agent_name || "Agent"),
+            content: String(event.content || ""),
+            time: new Date().toLocaleTimeString(),
+            role: "assistant",
+            agentId: event.agent_id as string | undefined,
+          },
+        ]);
+      }
+
+      const refreshTypes = [
+        "agent_status",
+        "artifact_created",
+        "phase_change",
+        "work_item_update",
+      ];
+      if (refreshTypes.includes(event.type)) {
+        needsRefresh = true;
+      }
+
+      // Build activity from agent_status and work_item_update events
+      if (event.type === "agent_status" || event.type === "work_item_update") {
+        const agent = agents.find((a) => a.id === event.agent_id);
+        if (agent) {
+          const action = event.type === "agent_status"
+            ? (event.status as string) ?? "updated"
+            : (event.action as string) ?? "updated";
+          const target = (event.work_item_title as string) ?? (event.name as string) ?? "";
+          if (target) {
+            setActivities((prev) => [
+              ...prev.slice(-19),
+              {
+                agentRole: agent.role,
+                action,
+                target,
+                timestamp: new Date().toISOString(),
+              },
+            ]);
+          }
         }
       }
+    }
+
+    if (needsRefresh) {
+      refreshAll();
     }
   }, [events, projectId, refreshAll, agents]);
 
