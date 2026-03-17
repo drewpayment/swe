@@ -4,10 +4,23 @@ import (
 	"context"
 	"fmt"
 	"net/http"
+	"os"
 	"os/exec"
+	"path/filepath"
+	"strings"
 	"sync"
 	"time"
 )
+
+// expandHome replaces a leading ~ with the user's home directory.
+func expandHome(path string) string {
+	if strings.HasPrefix(path, "~/") {
+		if home, err := os.UserHomeDir(); err == nil {
+			return filepath.Join(home, path[2:])
+		}
+	}
+	return path
+}
 
 // Manager handles OpenCode server lifecycle per project.
 type Manager struct {
@@ -38,6 +51,8 @@ func NewManager() *Manager {
 }
 
 func (m *Manager) StartServer(ctx context.Context, projectID, workDir string) (*ServerInstance, error) {
+	workDir = expandHome(workDir)
+
 	m.mu.Lock()
 	defer m.mu.Unlock()
 
@@ -49,6 +64,18 @@ func (m *Manager) StartServer(ctx context.Context, projectID, workDir string) (*
 		}
 		// Not healthy, clean up
 		m.stopServerLocked(projectID)
+	}
+
+	// Ensure working directory exists and is a git repo
+	if err := os.MkdirAll(workDir, 0o755); err != nil {
+		return nil, fmt.Errorf("creating work dir %s: %w", workDir, err)
+	}
+	if _, err := os.Stat(workDir + "/.git"); os.IsNotExist(err) {
+		gitInit := exec.Command("git", "init")
+		gitInit.Dir = workDir
+		if out, err := gitInit.CombinedOutput(); err != nil {
+			return nil, fmt.Errorf("git init in %s: %s: %w", workDir, string(out), err)
+		}
 	}
 
 	// Allocate port
