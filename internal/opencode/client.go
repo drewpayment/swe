@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"strings"
 	"time"
 )
 
@@ -32,7 +33,7 @@ type SendMessageResponse struct {
 }
 
 func (c *Client) CreateSession(ctx context.Context) (string, error) {
-	resp, err := c.post(ctx, "/api/session", nil)
+	resp, err := c.post(ctx, "/session", map[string]any{})
 	if err != nil {
 		return "", fmt.Errorf("creating session: %w", err)
 	}
@@ -44,21 +45,41 @@ func (c *Client) CreateSession(ctx context.Context) (string, error) {
 }
 
 func (c *Client) SendMessage(ctx context.Context, sessionID, message string) (string, error) {
-	body := map[string]string{"message": message}
-	resp, err := c.post(ctx, fmt.Sprintf("/api/session/%s/message", sessionID), body)
+	body := map[string]any{
+		"parts": []map[string]string{
+			{"type": "text", "text": message},
+		},
+	}
+	resp, err := c.post(ctx, fmt.Sprintf("/session/%s/message", sessionID), body)
 	if err != nil {
 		return "", fmt.Errorf("sending message: %w", err)
 	}
-	var result SendMessageResponse
+	// Response may have nested structure — try to extract content
+	var result map[string]any
 	if err := json.Unmarshal(resp, &result); err != nil {
-		// If structured parse fails, return raw response
 		return string(resp), nil
 	}
-	return result.Content, nil
+	// Check for info.parts[].text or direct content
+	if info, ok := result["info"].(map[string]any); ok {
+		if parts, ok := info["parts"].([]any); ok {
+			var texts []string
+			for _, p := range parts {
+				if pm, ok := p.(map[string]any); ok {
+					if t, ok := pm["text"].(string); ok {
+						texts = append(texts, t)
+					}
+				}
+			}
+			if len(texts) > 0 {
+				return strings.Join(texts, "\n"), nil
+			}
+		}
+	}
+	return string(resp), nil
 }
 
 func (c *Client) Health(ctx context.Context) bool {
-	req, err := http.NewRequestWithContext(ctx, "GET", c.baseURL+"/api/health", nil)
+	req, err := http.NewRequestWithContext(ctx, "GET", c.baseURL+"/session", nil)
 	if err != nil {
 		return false
 	}

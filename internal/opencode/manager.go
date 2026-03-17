@@ -156,7 +156,7 @@ func (m *Manager) freePort(port int) {
 
 func (m *Manager) isHealthy(inst *ServerInstance) bool {
 	client := &http.Client{Timeout: 2 * time.Second}
-	resp, err := client.Get(inst.URL + "/api/health")
+	resp, err := client.Get(inst.URL + "/session")
 	if err != nil {
 		return false
 	}
