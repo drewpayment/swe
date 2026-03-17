@@ -35,6 +35,19 @@ type parsedWorkItem struct {
 	Description string `json:"description"`
 }
 
+// stripJSONBlocks removes fenced JSON code blocks from a response,
+// leaving only the human-readable content for chat display.
+var jsonBlockPattern = regexp.MustCompile("(?s)```json\\s*\\n?.*?```")
+
+func stripJSONBlocks(response string) string {
+	cleaned := jsonBlockPattern.ReplaceAllString(response, "")
+	// Also strip bare JSON arrays that start a line: [{"title":...}]
+	cleaned = regexp.MustCompile(`(?m)^\s*\[\s*\{[^}]*"title"[^]]*\]\s*$`).ReplaceAllString(cleaned, "")
+	// Collapse multiple blank lines
+	cleaned = regexp.MustCompile(`\n{3,}`).ReplaceAllString(cleaned, "\n\n")
+	return strings.TrimSpace(cleaned)
+}
+
 // parseWorkItems extracts work items from an LLM response using multiple strategies.
 func parseWorkItems(response string) []parsedWorkItem {
 	var items []parsedWorkItem
@@ -239,13 +252,11 @@ func systemPromptForRole(role string, projectContext string) string {
 4. Proactively identify blockers, reassign work, and advance project phases
 5. Provide status updates and answer questions about the project
 
-When given a project brief, analyze it and produce work items. You MUST format them as a JSON array:
-[{"title": "Work item title", "description": "Detailed description"}]
-
-If you cannot use JSON, use numbered items with bold titles:
-1. **Title** — Description
-
-Be concise, professional, and action-oriented.
+IMPORTANT FORMATTING RULES:
+- Always respond in natural, conversational language that a human can read.
+- When creating work items, put the JSON array on its own line wrapped in triple backticks (` + "```json" + ` ... ` + "```" + `). The system will parse and remove it automatically.
+- NEVER show raw JSON to the user as your main response. Lead with a human-readable summary, then optionally include the JSON block for the system to parse.
+- Be concise, professional, and action-oriented.
 
 ` + projectContext
 
@@ -609,9 +620,10 @@ func AgentWorkflow(ctx workflow.Context, input AgentWorkflowInput) (*AgentWorkfl
 			)
 
 			response := callLLM(systemPrompt, prompt)
-			broadcastReply(response)
+			// Strip JSON blocks before displaying to user — keep raw response for parsing
+			broadcastReply(stripJSONBlocks(response))
 
-			// Parse and create work items
+			// Parse and create work items from the full response (including JSON)
 			if projectID != "" {
 				created := createWorkItems(response)
 
@@ -738,9 +750,9 @@ func AgentWorkflow(ctx workflow.Context, input AgentWorkflowInput) (*AgentWorkfl
 			if input.Role == "project_orchestrator" {
 				// Orchestrator handles user messages with full context
 				response := callLLM(systemPrompt, msg)
-				broadcastReply(response)
+				broadcastReply(stripJSONBlocks(response))
 
-				// Check if the response contains new work items to create
+				// Check if the response contains new work items to create (uses full response)
 				if projectID != "" {
 					msgLower := strings.ToLower(msg)
 					if strings.Contains(msgLower, "create") || strings.Contains(msgLower, "add") ||
